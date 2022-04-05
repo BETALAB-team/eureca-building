@@ -1,0 +1,5 @@
+eureca-building/__pycache__/
+eureca-building/test/__pycache__/
+eureca-building/example_scripts/__pycache__/
+.pytest_cache
+.spyproject
