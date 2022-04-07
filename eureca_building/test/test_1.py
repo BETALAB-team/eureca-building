@@ -12,6 +12,7 @@ import pytest
 import numpy as np
 
 from eureca_building.material import Material, AirGapMaterial
+from eureca_building.construction import Construction
 from eureca_building.exceptions import (
     MaterialPropertyOutsideBoundaries,
     MaterialPropertyNotFound,
@@ -83,10 +84,63 @@ class TestMaterials:
     def test_airgapmaterial_setter_good(self):
         mat = AirGapMaterial("Test material", thick=0.100, resistance=1)
 
-        mat.resistance = 800.0
+        mat.resistance = 2.0
 
     def test_airgapmaterial_setter_list(self):
         mat = AirGapMaterial("Test material", thick=0.100, resistance=1)
 
         with pytest.raises(TypeError):
             mat.thick = "fd"
+
+
+class TestConstruction:
+    """
+    This is a test class for the pytest module.
+    It tests Construction class and its property
+    """
+
+    def test_wall(self):
+        plaster = Material(
+            "plaster", thick=0.01, cond=1.0, spec_heat=800.0, dens=2000.0
+        )
+
+        hollowed_bricks = Material(
+            "hollowed_bricks", thick=0.150, cond=1.4, spec_heat=800.0, dens=2000.0,
+        )
+
+        air = AirGapMaterial("AirMaterial", thick=0.02, resistance=0.5)
+
+        insulation = Material("tyles", thick=0.01, cond=1, spec_heat=840.0, dens=2300.0)
+
+        Construction(
+            "ExtWall",
+            materials_list=[plaster, hollowed_bricks, air, insulation, plaster],
+            construction_type="ExtWall",
+        )
+
+    def test_wall_values(self):
+        plaster = Material(
+            "plaster", thick=0.01, cond=1.0, spec_heat=800.0, dens=2000.0
+        )
+
+        hollowed_bricks = Material(
+            "hollowed_bricks", thick=0.150, cond=1.4, spec_heat=800.0, dens=2000.0,
+        )
+
+        air = AirGapMaterial("AirMaterial", thick=0.02, resistance=0.5)
+
+        insulation = Material(
+            "tyles", thick=0.01, cond=0.03, spec_heat=1000.0, dens=30.0
+        )
+
+        ext_wall = Construction(
+            "ExtWall",
+            materials_list=[plaster, hollowed_bricks, air, insulation, plaster],
+            construction_type="ExtWall",
+        )
+
+        # U net should be 1.041150223
+        # U should be 0.884684616
+
+        assert abs(ext_wall.U - 0.884684616) < ext_wall.U / 0.001
+        assert abs(ext_wall.U_net - 1.041150223) < ext_wall.U_net / 0.001

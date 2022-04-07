@@ -85,9 +85,11 @@ class Construction(object):
 
         # Check input data type
         for mat in materials_list:
-            if not isinstance(mat, Material) or not isinstance(mat, AirGapMaterial):
+            if (not isinstance(mat, Material)) and (
+                not isinstance(mat, AirGapMaterial)
+            ):
                 raise TypeError(
-                    f"Construction {name}. materials_list must be a list of Materials or AirGapMaterial objects"
+                    f"Construction {name}. materials_list must be a list of Materials or AirGapMaterial objects. Material {mat.name}"
                 )
         if construction_type not in [
             "ExtWall",
@@ -112,11 +114,11 @@ class Construction(object):
             self.tot_heat_trans_coef.loc[self.construction_type]["Outside"]
         )
         self._conv_heat_trans_coef_int = (
-            self.tot_heat_trans_coef.loc[self.wallType]["Inside"]
+            self.tot_heat_trans_coef.loc[self.construction_type]["Inside"]
             - self.rad_heat_trans_coef
         )
         self._conv_heat_trans_coef_ext = (
-            self.tot_heat_trans_coef.loc[self.wallType]["Outside"]
+            self.tot_heat_trans_coef.loc[self.construction_type]["Outside"]
             - self.rad_heat_trans_coef
         )
 
@@ -131,7 +133,7 @@ class Construction(object):
         self.spec_heats = np.zeros(self.number_of_layers)
         self.resistances = np.zeros(self.number_of_layers)
         for i, mat in zip(range(self.number_of_layers), self.materials_list):
-            self.net_resistance += mat.resistance
+            self.net_thermal_resistance += mat.resistance
             self.thicknesses[i] = mat.thick
             self.conductivities[i] = mat.cond
             self.densities[i] = mat.dens
@@ -174,9 +176,9 @@ class Construction(object):
 
         # Thermal transfer matrix
 
-        Z = np.zeros((2, 2, self.number), complex)
+        Z = np.zeros((2, 2, self.number_of_layers), complex)
 
-        for i in range(self.number):
+        for i in range(self.number_of_layers):
 
             Z[0, 0, i] = np.cosh(eps[i]) * np.cos(eps[i]) + 1j * np.sinh(
                 eps[i]
@@ -326,7 +328,7 @@ class Construction(object):
         self._A1n_t7 = np.zeros((2, 2, 1), complex)
         self._A1n_t2 = Z_t2[:, :, -1]
         self._A1n_t7 = Z_t7[:, :, -1]
-        for t in range(-2, -self.nL - 1, -1):
+        for t in range(-2, -self.number_of_layers - 1, -1):
             self._A1n_t2 = np.matmul(self._A1n_t2, Z_t2[:, :, t])
             self._A1n_t7 = np.matmul(self._A1n_t7, Z_t7[:, :, t])
 

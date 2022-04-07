@@ -28,5 +28,4 @@ material_limits = {
     "starting_temperature": [0.0, 99.0],
     "thermal_resistance": [0, 20],
     "absorptance": [0, 1],
-    ""
 }
