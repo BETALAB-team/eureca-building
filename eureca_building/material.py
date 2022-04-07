@@ -8,13 +8,9 @@ __license__ = "MIT"
 __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
-from eureca_building.exceptions import (
-    MaterialPropertyOutsideBoundaries,
-)
+from eureca_building.exceptions import MaterialPropertyOutsideBoundaries
 from eureca_building.units import units, material_limits
 from eureca_building.logs import logs_printer
-
-# @dataclass
 
 
 class Material:
@@ -115,8 +111,7 @@ class Material:
         try:
             value = float(value)
         except ValueError:
-            raise TypeError(
-                f"Material {self.name}, thickness is not a float: {value}")
+            raise TypeError(f"Material {self.name}, thickness is not a float: {value}")
         if (
             value < material_limits["thickness"][0]
             or value > material_limits["thickness"][1]
@@ -141,8 +136,7 @@ class Material:
         try:
             value = float(value)
         except ValueError:
-            raise TypeError(
-                f"Material {self.name}, density is not a float: {value}")
+            raise TypeError(f"Material {self.name}, density is not a float: {value}")
         if (
             value < material_limits["density"][0]
             or value > material_limits["density"][1]
@@ -240,14 +234,10 @@ class Material:
         self._absorptance = value
 
     def calc_capacity(self):
-        self.capacity = (
-            self.thick * self.dens * self.spec_heat
-        )
+        self.capacity = self.thick * self.dens * self.spec_heat
 
     def calc_resistance(self):
-        self.resistance = (
-            self.thick / self.cond
-        )
+        self.resistance = self.thick / self.cond
 
     def calc_paramas(self):
         self.calc_capacity()
@@ -280,19 +270,14 @@ class AirGapMaterial:
 
     name: str
     thick: float = 0.100  # Thickness [m]
-    resistance: float = 1.00  # Conductivity [mK/W]
+    resistance: float = 1.00  # resistance [m2K/W]
 
     # Just to use the @property decorator and the setter function
     # _name: str = field(init = False, repr = False)
     # _thick: float = field(init = False, repr = False)
     # _resistance: float = field(init = False, repr = False)
 
-    def __init__(
-        self,
-        name,
-        thick: float = 0.100,
-        resistance: float = 1.00
-    ):
+    def __init__(self, name, thick: float = 0.100, resistance: float = 1.00):
         """
         Define the material and check the properties
 
@@ -319,6 +304,11 @@ class AirGapMaterial:
         self.thick = thick
         self.resistance = resistance
 
+        # Just some equivalent values
+        self.cond = self.thick / self.resistance
+        self.dens = 1.2  # [kg/m3]
+        self.spec_heat = 1005.0  # [J/kgK]
+
     @property
     def thick(self) -> float:
         return self._thick
@@ -328,8 +318,7 @@ class AirGapMaterial:
         try:
             value = float(value)
         except ValueError:
-            raise TypeError(
-                f"Material {self.name}, thickness is not a float: {value}")
+            raise TypeError(f"Material {self.name}, thickness is not a float: {value}")
         if (
             value < material_limits["thickness"][0]
             or value > material_limits["thickness"][1]
@@ -354,8 +343,7 @@ class AirGapMaterial:
         try:
             value = float(value)
         except ValueError:
-            raise TypeError(
-                f"Material {self.name}, resistance is not a float: {value}")
+            raise TypeError(f"Material {self.name}, resistance is not a float: {value}")
         if (
             value < material_limits["thermal_resistance"][0]
             or value > material_limits["thermal_resistance"][1]

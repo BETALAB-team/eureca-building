@@ -47,3 +47,11 @@ class MaterialPropertyNotFound(Exception):
     """
 
     pass
+
+
+class WrongConstructionType(Exception):
+    """
+    Class to raise the exeption wrong construction type
+    """
+
+    pass
