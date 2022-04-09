@@ -18,6 +18,9 @@ units = {
     "temperature": "[°C]",
     "thermal_resistance": "[(m2 K)/W]",
     "absorptance": "[-]",
+    "U_value": "[W/(m2 K)]",
+    "solar_heat_gain_coefficient": "[-]",
+    "non_dimensional_coefficient": "[-]",
 }
 
 material_limits = {
@@ -28,4 +31,7 @@ material_limits = {
     "starting_temperature": [0.0, 99.0],
     "thermal_resistance": [0, 20],
     "absorptance": [0, 1],
+    "window_u_value": [1.0, 7.0],
+    "solar_heat_gain_coefficient": [0.0, 1.0],
+    "non_dimensional_coefficient": [0.0, 1.0],
 }

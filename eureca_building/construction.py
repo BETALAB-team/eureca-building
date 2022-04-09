@@ -1,5 +1,5 @@
 """
-This module includes classes and fuction to solve the radiant system
+This module includes classfor the typical construction
 """
 
 __author__ = "Enrico Prataviera"
