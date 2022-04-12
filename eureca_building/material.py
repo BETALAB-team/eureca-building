@@ -63,11 +63,13 @@ class Material:
 
     def __init__(
         self,
-        name,
+        idx: int,
+        name: str,
         thick: float = 0.100,
         cond: float = 1.00,
         spec_heat: float = 1000.0,
         dens: float = 1000.0,
+        thermal_absorptance: float = 0.9,
     ):
         """
         Define the material and check the properties
@@ -84,6 +86,8 @@ class Material:
             spec_heat
         dens : float
             density
+        thermal_absorptance : float
+            thermal absorptance  [-]
 
         Returns
         -------
@@ -95,11 +99,13 @@ class Material:
         MaterialPropertyOutsideBoundaries
             If a material parameter is not allowed.
         """
+        self.idx = idx
         self.name = name
         self.thick = thick
         self.dens = dens
         self.cond = cond
         self.spec_heat = spec_heat
+        self.thermal_absorptance = thermal_absorptance
         self.calc_paramas()
 
     @property
@@ -207,16 +213,16 @@ class Material:
         self._spec_heat = value
 
     @property
-    def absorptance(self) -> float:
-        return self._spec_heat
+    def thermal_absorptance(self) -> float:
+        return self._thermal_absorptance
 
-    @absorptance.setter
-    def absorptance(self, value: float):
+    @thermal_absorptance.setter
+    def thermal_absorptance(self, value: float):
         try:
             value = float(value)
         except ValueError:
             raise TypeError(
-                f"Material {self.name}, absorptance is not a float: {value}"
+                f"Material {self.name}, thermal_absorptance is not a float: {value}"
             )
         if (
             value < material_limits["absorptance"][0]
@@ -226,7 +232,7 @@ class Material:
             # Check if thickenss is outside
             raise MaterialPropertyOutsideBoundaries(
                 self.name,
-                "absorptance",
+                "thermal_absorptance",
                 lim=material_limits["absorptance"],
                 unit=units["absorptance"],
                 value=value,
@@ -268,6 +274,7 @@ class AirGapMaterial:
         Creates the material and checks the properties
     """
 
+    idx: int
     name: str
     thick: float = 0.100  # Thickness [m]
     resistance: float = 1.00  # resistance [m2K/W]
@@ -277,7 +284,9 @@ class AirGapMaterial:
     # _thick: float = field(init = False, repr = False)
     # _resistance: float = field(init = False, repr = False)
 
-    def __init__(self, name, thick: float = 0.100, resistance: float = 1.00):
+    def __init__(
+        self, idx: int, name: str, thick: float = 0.100, resistance: float = 1.00
+    ):
         """
         Define the material and check the properties
 

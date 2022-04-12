@@ -12,6 +12,7 @@ import pytest
 import numpy as np
 
 from eureca_building.material import Material, AirGapMaterial
+from eureca_building.window import SimpleWindow
 from eureca_building.construction import Construction
 from eureca_building.exceptions import (
     MaterialPropertyOutsideBoundaries,
@@ -144,3 +145,15 @@ class TestConstruction:
 
         assert abs(ext_wall.U - 0.884684616) < ext_wall.U / 0.001
         assert abs(ext_wall.U_net - 1.041150223) < ext_wall.U_net / 0.001
+
+    def test_window_values(self):
+        window = SimpleWindow(
+            idx=3,
+            name="window_1",
+            u_value=5,
+            solar_heat_gain_coef=0.2,
+            visible_transmittance=0.3,
+            frame_factor=0.1,
+            shading_coef_int=0.1,
+            shading_coef_ext=0.1,
+        )

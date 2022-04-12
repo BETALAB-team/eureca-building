@@ -31,6 +31,9 @@ material_limits = {
     "starting_temperature": [0.0, 99.0],
     "thermal_resistance": [0, 20],
     "absorptance": [0, 1],
+}
+
+window_material_limits = {
     "window_u_value": [1.0, 7.0],
     "solar_heat_gain_coefficient": [0.0, 1.0],
     "non_dimensional_coefficient": [0.0, 1.0],

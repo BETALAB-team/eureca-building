@@ -10,11 +10,11 @@ __maintainer__ = "Enrico Prataviera"
 
 import pandas as pd
 import numpy as np
-from scipy import interpolate
+from scipy.interpolate import splrep
 
 from eureca_building.exceptions import MaterialPropertyOutsideBoundaries
 from eureca_building.logs import logs_printer
-from eureca_building.units import units, material_limits
+from eureca_building.units import units, window_material_limits
 
 
 #%% Simple Window class: refer to EnergyPlus reference
@@ -98,15 +98,15 @@ class SimpleWindow(object):
         except ValueError:
             raise TypeError(f"Material {self.name}, u_value is not a float: {value}")
         if (
-            value < material_limits["window_u_value"][0]
-            or value > material_limits["window_u_value"][1]
+            value < window_material_limits["window_u_value"][0]
+            or value > window_material_limits["window_u_value"][1]
         ):
             # Value in [m]. Take a look to units
             # Check if thickenss is outside
             raise MaterialPropertyOutsideBoundaries(
                 self.name,
                 "U_value",
-                lim=material_limits["window_u_value"],
+                lim=window_material_limits["window_u_value"],
                 unit=units["U_value"],
                 value=value,
             )
@@ -125,15 +125,15 @@ class SimpleWindow(object):
                 f"Material {self.name}, solar_heat_gain_coef is not a float: {value}"
             )
         if (
-            value < material_limits["solar_heat_gain_coefficient"][0]
-            or value > material_limits["solar_heat_gain_coefficient"][1]
+            value < window_material_limits["solar_heat_gain_coefficient"][0]
+            or value > window_material_limits["solar_heat_gain_coefficient"][1]
         ):
             # Value in [m]. Take a look to units
             # Check if thickenss is outside
             raise MaterialPropertyOutsideBoundaries(
                 self.name,
                 "solar_heat_gain_coefficient",
-                lim=material_limits["solar_heat_gain_coefficient"],
+                lim=window_material_limits["solar_heat_gain_coefficient"],
                 unit=units["solar_heat_gain_coefficient"],
                 value=value,
             )
@@ -152,15 +152,15 @@ class SimpleWindow(object):
                 f"Material {self.name}, visible_transmittance is not a float: {value}"
             )
         if (
-            value < material_limits["non_dimensional_coefficient"][0]
-            or value > material_limits["non_dimensional_coefficient"][1]
+            value < window_material_limits["non_dimensional_coefficient"][0]
+            or value > window_material_limits["non_dimensional_coefficient"][1]
         ):
             # Value in [m]. Take a look to units
             # Check if thickenss is outside
             raise MaterialPropertyOutsideBoundaries(
                 self.name,
                 "visible_transiìmittance",
-                lim=material_limits["non_dimensional_coefficient"],
+                lim=window_material_limits["non_dimensional_coefficient"],
                 unit=units["non_dimensional_coefficient"],
                 value=value,
             )
@@ -179,15 +179,15 @@ class SimpleWindow(object):
                 f"Material {self.name}, frame_factor is not a float: {value}"
             )
         if (
-            value < material_limits["non_dimensional_coefficient"][0]
-            or value > material_limits["non_dimensional_coefficient"][1]
+            value < window_material_limits["non_dimensional_coefficient"][0]
+            or value > window_material_limits["non_dimensional_coefficient"][1]
         ):
             # Value in [m]. Take a look to units
             # Check if thickenss is outside
             raise MaterialPropertyOutsideBoundaries(
                 self.name,
                 "frame_factor",
-                lim=material_limits["non_dimensional_coefficient"],
+                lim=window_material_limits["non_dimensional_coefficient"],
                 unit=units["non_dimensional_coefficient"],
                 value=value,
             )
@@ -206,15 +206,15 @@ class SimpleWindow(object):
                 f"Material {self.name}, shading_coef_int is not a float: {value}"
             )
         if (
-            value < material_limits["non_dimensional_coefficient"][0]
-            or value > material_limits["non_dimensional_coefficient"][1]
+            value < window_material_limits["non_dimensional_coefficient"][0]
+            or value > window_material_limits["non_dimensional_coefficient"][1]
         ):
             # Value in [m]. Take a look to units
             # Check if thickenss is outside
             raise MaterialPropertyOutsideBoundaries(
                 self.name,
                 "shading_coef_int",
-                lim=material_limits["non_dimensional_coefficient"],
+                lim=window_material_limits["non_dimensional_coefficient"],
                 unit=units["non_dimensional_coefficient"],
                 value=value,
             )
@@ -233,15 +233,15 @@ class SimpleWindow(object):
                 f"Material {self.name}, shading_coef_ext is not a float: {value}"
             )
         if (
-            value < material_limits["non_dimensional_coefficient"][0]
-            or value > material_limits["non_dimensional_coefficient"][1]
+            value < window_material_limits["non_dimensional_coefficient"][0]
+            or value > window_material_limits["non_dimensional_coefficient"][1]
         ):
             # Value in [m]. Take a look to units
             # Check if thickenss is outside
             raise MaterialPropertyOutsideBoundaries(
                 self.name,
                 "shading_coef_ext",
-                lim=material_limits["non_dimensional_coefficient"],
+                lim=window_material_limits["non_dimensional_coefficient"],
                 unit=units["non_dimensional_coefficient"],
                 value=value,
             )
@@ -1166,6 +1166,6 @@ class SimpleWindow(object):
             self.Ts_abs_alpha + self.N * self.As_abs_alpha
         )
         self.alpha2 = np.linspace(0, 90, 10)
-        self.solar_heat_gain_coef_profile = interpolate.splrep(
+        self.solar_heat_gain_coef_profile = splrep(
             self.alpha2, self.solar_heat_gain_coef_abs_alpha, s=0
         )
