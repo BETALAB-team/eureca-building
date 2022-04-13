@@ -8,12 +8,15 @@ __license__ = "MIT"
 __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
+import os
+
 import pytest
 import numpy as np
 
 from eureca_building.material import Material, AirGapMaterial
 from eureca_building.window import SimpleWindow
 from eureca_building.construction import Construction
+from eureca_building.construction_dataset import ConstructionDataset
 from eureca_building.exceptions import (
     MaterialPropertyOutsideBoundaries,
     MaterialPropertyNotFound,
@@ -70,25 +73,25 @@ class TestMaterials:
         AirGapMaterial("Test material")
 
     def test_air_material_2(self):
-        AirGapMaterial("Test material", thick=0.100, resistance=1)
+        AirGapMaterial("Test material", thick=0.100, thermal_resistance=1)
 
     def test_airgapmaterial_with_prop_wrong(self):
         with pytest.raises(MaterialPropertyOutsideBoundaries):
-            AirGapMaterial("Test material", resistance=100)
+            AirGapMaterial("Test material", thermal_resistance=100)
 
     def test_airgapmaterial_setter(self):
-        mat = AirGapMaterial("Test material", thick=0.100, resistance=1)
+        mat = AirGapMaterial("Test material", thick=0.100, thermal_resistance=1)
 
         with pytest.raises(MaterialPropertyOutsideBoundaries):
             mat.thick = 100.0
 
     def test_airgapmaterial_setter_good(self):
-        mat = AirGapMaterial("Test material", thick=0.100, resistance=1)
+        mat = AirGapMaterial("Test material", thick=0.100, thermal_resistance=1)
 
-        mat.resistance = 2.0
+        mat.thermal_resistance = 2.0
 
     def test_airgapmaterial_setter_list(self):
-        mat = AirGapMaterial("Test material", thick=0.100, resistance=1)
+        mat = AirGapMaterial("Test material", thick=0.100, thermal_resistance=1)
 
         with pytest.raises(TypeError):
             mat.thick = "fd"
@@ -109,7 +112,7 @@ class TestConstruction:
             "hollowed_bricks", thick=0.150, cond=1.4, spec_heat=800.0, dens=2000.0,
         )
 
-        air = AirGapMaterial("AirMaterial", thick=0.02, resistance=0.5)
+        air = AirGapMaterial("AirMaterial", thick=0.02, thermal_resistance=0.5)
 
         insulation = Material("tyles", thick=0.01, cond=1, spec_heat=840.0, dens=2300.0)
 
@@ -128,7 +131,7 @@ class TestConstruction:
             "hollowed_bricks", thick=0.150, cond=1.4, spec_heat=800.0, dens=2000.0,
         )
 
-        air = AirGapMaterial("AirMaterial", thick=0.02, resistance=0.5)
+        air = AirGapMaterial("AirMaterial", thick=0.02, thermal_resistance=0.5)
 
         insulation = Material(
             "tyles", thick=0.01, cond=0.03, spec_heat=1000.0, dens=30.0
@@ -148,7 +151,6 @@ class TestConstruction:
 
     def test_window_values(self):
         window = SimpleWindow(
-            idx=3,
             name="window_1",
             u_value=5,
             solar_heat_gain_coef=0.2,
@@ -157,3 +159,19 @@ class TestConstruction:
             shading_coef_int=0.1,
             shading_coef_ext=0.1,
         )
+
+
+class TestConstructionDataset:
+    """
+    This is a test class for the pytest module.
+    It tests ConstructionDataset class and its property
+    """
+
+    def test_read_excel_method(self):
+        path = os.path.join(
+            "eureca_building",
+            "example_scripts",
+            "materials_and_construction_test.xlsx",
+        )
+
+        dataset = ConstructionDataset.read_excel(path)

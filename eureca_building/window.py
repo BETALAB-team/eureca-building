@@ -38,7 +38,6 @@ class SimpleWindow(object):
 
     def __init__(
         self,
-        idx: int,
         name: str,
         u_value: float,
         solar_heat_gain_coef: float,
@@ -52,8 +51,6 @@ class SimpleWindow(object):
 
         Parameters
         ----------
-        idx : int
-            id number.
         name : str
             name.
         u_value : float
@@ -75,7 +72,6 @@ class SimpleWindow(object):
 
         """
 
-        self.id = idx
         self.name = name
         self.u_value = u_value
         self.solar_heat_gain_coef = solar_heat_gain_coef
@@ -1169,3 +1165,9 @@ class SimpleWindow(object):
         self.solar_heat_gain_coef_profile = splrep(
             self.alpha2, self.solar_heat_gain_coef_abs_alpha, s=0
         )
+
+    def __str__(self):
+        return f"""
+SimpleWindow: {self.name}
+    U-value: {self.u_value} {units["U_value"]}
+    Solar Heat Gain Coef.: {self.solar_heat_gain_coef} {units["solar_heat_gain_coefficient"]}"""

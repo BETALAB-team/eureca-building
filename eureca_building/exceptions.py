@@ -55,3 +55,11 @@ class WrongConstructionType(Exception):
     """
 
     pass
+
+
+class WrongMaterialType(Exception):
+    """
+    Class to raise the exeption wrong construction type
+    """
+
+    pass

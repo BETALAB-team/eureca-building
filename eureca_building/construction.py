@@ -16,6 +16,7 @@ from eureca_building.exceptions import (
     WrongConstructionType,
 )
 from eureca_building.material import Material, AirGapMaterial
+from eureca_building.units import units
 from eureca_building.logs import logs_printer
 
 
@@ -122,7 +123,7 @@ class Construction(object):
             - self.rad_heat_trans_coef
         )
 
-        self.ext_absorptance = self.materials_list[0].absorptance
+        self.ext_absorptance = self.materials_list[0].thermal_absorptance
         self.number_of_layers = len(self.materials_list)
 
         # Calculation of the U-values [W/(m2 K)] and creation of some arrays
@@ -131,14 +132,14 @@ class Construction(object):
         self.conductivities = np.zeros(self.number_of_layers)
         self.densities = np.zeros(self.number_of_layers)
         self.spec_heats = np.zeros(self.number_of_layers)
-        self.resistances = np.zeros(self.number_of_layers)
+        self.thermal_resistances = np.zeros(self.number_of_layers)
         for i, mat in zip(range(self.number_of_layers), self.materials_list):
-            self.net_thermal_resistance += mat.resistance
+            self.net_thermal_resistance += mat.thermal_resistance
             self.thicknesses[i] = mat.thick
             self.conductivities[i] = mat.cond
             self.densities[i] = mat.dens
             self.spec_heats[i] = mat.spec_heat
-            self.resistances[i] = mat.resistance
+            self.thermal_resistances[i] = mat.thermal_resistance
         self.thermal_resistance = self.net_thermal_resistance + self._R_si + self._R_se
 
         self.U_net = 1 / self.net_thermal_resistance
@@ -265,7 +266,7 @@ class Construction(object):
         None.
         """
 
-        R = self.resistances  # layers thermal resistance [m2 K / W]
+        R = self.thermal_resistances  # layers thermal resistance [m2 K / W]
         # layers thermal capacitance [J m2 / K]
         C = self.spec_heats * self.densities * self.thicknesses
 
@@ -365,7 +366,7 @@ class Construction(object):
 
         if sup == 0:
             sup = 0.0000001
-        rw = sum(self.resistances) / sup
+        rw = sum(self.thermal_resistances) / sup
 
         R1_t = dict()
         C1_t = dict()
@@ -431,19 +432,10 @@ class Construction(object):
             C1 = C1_t["7"]
         return R1, C1
 
-    def printInfo(self):
-        """
-        Just print some info about the structure
-
-        Parameters
-            ----------
-            None
-
-        Returns
-        -------
-        None
-        """
-        print(self.name)
-        print(self.U)
-        print(self.k_int)
-        print(self.k_est)
+    def __str__(self):
+        return f"""
+Construction: {self.name}
+    construction type: {self.construction_type}
+    U-value: {self.U:.2f} {units["U_value"]}
+    number of layers: {len(self.materials_list)}
+    materias: {[str(mat.name) for mat in self.materials_list]}"""

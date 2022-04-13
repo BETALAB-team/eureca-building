@@ -27,7 +27,7 @@ material_limits = {
     "thickness": [0.0, 1.0],
     "conductivity": [0.0, 10.0],
     "density": [0.0, 3000.0],
-    "specific_heat": [0.0, 2000.0],
+    "specific_heat": [0.0, 3000.0],
     "starting_temperature": [0.0, 99.0],
     "thermal_resistance": [0, 20],
     "absorptance": [0, 1],

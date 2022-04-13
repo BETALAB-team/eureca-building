@@ -12,8 +12,9 @@ import pandas as pd
 
 from eureca_building.construction import Construction
 from eureca_building.window import SimpleWindow
-from eureca_building.material import Material
+from eureca_building.material import Material, AirGapMaterial
 from eureca_building.logs import logs_printer
+from eureca_building.exceptions import WrongConstructionType, WrongMaterialType
 
 
 class ConstructionDataset:
@@ -47,32 +48,52 @@ class ConstructionDataset:
 
     @classmethod
     def read_excel(cls, file):
-        dataset = cls.__init__()
+        dataset = cls()
 
-        data = pd.read_excel(file, sheetname=None)
+        data = pd.read_excel(file, sheet_name=None, index_col=0)
 
         # Windows
         for win_idx in data["Windows"].index:
-            win = data["Windows"].loc(win_idx)
+            win = data["Windows"].loc[win_idx]
             dataset.windows_dict[win_idx] = SimpleWindow(
-                idx=win_idx,
                 name=win["name"],
                 u_value=win["U [W/(m²K)]"],
                 solar_heat_gain_coef=win["Solar_Heat_Gain_Coef [-]"],
                 visible_transmittance=win["visible_transmittance [-]"],
                 frame_factor=win["frame_factor [-]"],
-                shading_coef_int=win["shading_coeff_int [-]"],
-                shading_coef_ext=win["shading_coeff_ext [-]"],
+                shading_coef_int=win["shading_coef_int [-]"],
+                shading_coef_ext=win["shading_coef_ext [-]"],
             )
         # Materials
         for mat_idx in data["Materials"].index:
-            mat = data["Materials"].loc(mat_idx)
+            mat = data["Materials"].loc[mat_idx]
             if mat["Material_type"] == "Opaque":
-                dataset.materials_dict[win_idx] = Material(
-                    idx=mat_idx,
+                dataset.materials_dict[mat_idx] = Material(
                     name=mat["name"],
                     thick=mat["Thickness [m]"],
                     cond=mat["Conductivity [W/(m K)]"],
                     spec_heat=mat["Specific_heat [J/(kg K)]"],
                     dens=mat["Density [kg/m³]"],
                 )
+            elif mat["Material_type"] == "AirGapMaterial":
+                dataset.materials_dict[mat_idx] = AirGapMaterial(
+                    name=mat["name"],
+                    thermal_resistance=mat["Thermal_resistance [(m2 K)/W]"],
+                )
+            else:
+                raise WrongMaterialType(
+                    f"Material {mat['name']}, invalid material type"
+                )
+        # Constructions
+        for cons_idx in data["Constructions"].index:
+            cons = data["Constructions"].loc[cons_idx]
+            list_of_materials = [
+                dataset.materials_dict[x] for x in cons[3:] if str(x) != "nan"
+            ]
+
+            dataset.constructions_dict[cons_idx] = Construction(
+                cons["name"],
+                materials_list=list_of_materials,
+                construction_type=cons["type"],
+            )
+        return dataset

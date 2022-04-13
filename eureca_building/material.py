@@ -63,7 +63,6 @@ class Material:
 
     def __init__(
         self,
-        idx: int,
         name: str,
         thick: float = 0.100,
         cond: float = 1.00,
@@ -99,7 +98,6 @@ class Material:
         MaterialPropertyOutsideBoundaries
             If a material parameter is not allowed.
         """
-        self.idx = idx
         self.name = name
         self.thick = thick
         self.dens = dens
@@ -237,17 +235,25 @@ class Material:
                 unit=units["absorptance"],
                 value=value,
             )
-        self._absorptance = value
+        self._thermal_absorptance = value
 
     def calc_capacity(self):
         self.capacity = self.thick * self.dens * self.spec_heat
 
     def calc_resistance(self):
-        self.resistance = self.thick / self.cond
+        self.thermal_resistance = self.thick / self.cond
 
     def calc_paramas(self):
         self.calc_capacity()
         self.calc_resistance()
+
+    def __str__(self):
+        return f"""
+Material: {self.name}
+    thickness: {self.thick} {units["length"]}
+    density: {self.dens} {units["density"]}
+    specific heat: {self.spec_heat} {units["specific_heat"]}
+    conductivity: {self.cond} {units["conductivity"]}"""
 
 
 class AirGapMaterial:
@@ -262,22 +268,21 @@ class AirGapMaterial:
         name
     thick : float
         thickness
-    resistance : float
-        resistance
+    thermal_resistance : float
+        thermal_resistance
 
     Methods
     -------
     __init__(self,
         name,
         thick: float = 0.100,
-        resistance: float = 1.00)
+        thermal_resistance: float = 1.00)
         Creates the material and checks the properties
     """
 
-    idx: int
     name: str
     thick: float = 0.100  # Thickness [m]
-    resistance: float = 1.00  # resistance [m2K/W]
+    thermal_resistance: float = 1.00  # thermal_resistance [m2K/W]
 
     # Just to use the @property decorator and the setter function
     # _name: str = field(init = False, repr = False)
@@ -285,7 +290,7 @@ class AirGapMaterial:
     # _resistance: float = field(init = False, repr = False)
 
     def __init__(
-        self, idx: int, name: str, thick: float = 0.100, resistance: float = 1.00
+        self, name: str, thick: float = 0.100, thermal_resistance: float = 1.00
     ):
         """
         Define the material and check the properties
@@ -296,8 +301,8 @@ class AirGapMaterial:
             name
         thick : float
             thickness
-        resistance : float
-            resistance
+        thermal_resistance : float
+            thermal_resistance
 
         Returns
         -------
@@ -311,10 +316,10 @@ class AirGapMaterial:
         """
         self.name = name
         self.thick = thick
-        self.resistance = resistance
+        self.thermal_resistance = thermal_resistance
 
         # Just some equivalent values
-        self.cond = self.thick / self.resistance
+        self.cond = self.thick / self.thermal_resistance
         self.dens = 1.2  # [kg/m3]
         self.spec_heat = 1005.0  # [J/kgK]
 
@@ -344,15 +349,17 @@ class AirGapMaterial:
         self._thick = value
 
     @property
-    def resistance(self) -> float:
-        return self._resistance
+    def thermal_resistance(self) -> float:
+        return self._thermal_resistance
 
-    @resistance.setter
-    def resistance(self, value: float):
+    @thermal_resistance.setter
+    def thermal_resistance(self, value: float):
         try:
             value = float(value)
         except ValueError:
-            raise TypeError(f"Material {self.name}, resistance is not a float: {value}")
+            raise TypeError(
+                f"Material {self.name}, thermal_resistance is not a float: {value}"
+            )
         if (
             value < material_limits["thermal_resistance"][0]
             or value > material_limits["thermal_resistance"][1]
@@ -366,4 +373,9 @@ class AirGapMaterial:
                 unit=units["thermal_resistance"],
                 value=value,
             )
-        self._resistance = value
+        self._thermal_resistance = value
+
+    def __str__(self):
+        return f"""
+AirGapMaterial: {self.name}
+    thermal resistance: {self.thermal_resistance} {units["thermal_resistance"]}"""
