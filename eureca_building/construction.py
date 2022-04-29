@@ -333,7 +333,7 @@ class Construction(object):
             self._A1n_t2 = np.matmul(self._A1n_t2, Z_t2[:, :, t])
             self._A1n_t7 = np.matmul(self._A1n_t7, Z_t7[:, :, t])
 
-    def vdi6007surfaceParams(self, sup, asim):
+    def vdi_6007_surface_params(self, sup, asim):
         """
         Calculates vdi6007 params
 
