@@ -63,3 +63,29 @@ class WrongMaterialType(Exception):
     """
 
     pass
+
+
+#%% Surfaces exeptions
+class Non3ComponentsVertex(Exception):
+
+    pass
+
+
+class WindowToWallRatioOutsideBoundaries(Exception):
+
+    pass
+
+
+class InvalidSurfaceType(Exception):
+
+    pass
+
+
+class NonPlanarSurface(Exception):
+
+    pass
+
+
+class NegativeSurfaceArea(Exception):
+
+    pass

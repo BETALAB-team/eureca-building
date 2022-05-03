@@ -64,6 +64,61 @@ def normal_versor(a, b, c):
 #%%
 
 
+def normal_versor_2(vert_list):
+
+    """
+    Alternative
+    This function starting from three points defines the normal vector of the plane
+    
+    Parameters
+    ----------
+    vert_list : list of list of floats (polygon)
+        list with n lists of three floats (n vertices)
+ 
+    Returns
+    -------
+    np.array: coordinates of the centroid (3 components)
+    
+    """
+
+    # Check input data type
+
+    if not isinstance(vert_list, list):
+        raise TypeError(
+            f"ERROR normal_versor_2 function, the input is not a list: input {vert_list}"
+        )
+    # if len(vert_list) > 3:
+    # wrn(f"normalAlternative function, there vertlist should be 3 components long: vertList {vertList}")
+
+    for vtx in vert_list:
+        if not isinstance(vtx, list):
+            raise TypeError(
+                f"ERROR normalAlternative function, an input is not a list: input {vtx}"
+            )
+        if len(vtx) != 3:
+            raise TypeError(
+                f"ERROR normalAlternative function, a vertex is not a list of 3 components: input {vtx}"
+            )
+        try:
+            vtx[0] = float(vtx[0])
+            vtx[1] = float(vtx[1])
+            vtx[2] = float(vtx[2])
+        except ValueError:
+            raise ValueError(
+                f"ERROR normalAlternative function, a coordinate is not a float: input {vtx}"
+            )
+    c = centroid(vert_list)
+    crossProd = np.array([0.0, 0, 0])
+    for i in range(len(vert_list)):
+        a = np.array(vert_list[i - 1]) - c
+        b = np.array(vert_list[i]) - c
+        crossProd += np.cross(a, b)
+    return crossProd / np.linalg.norm(crossProd)
+
+
+#%%
+
+
 def polygon_area(poly):
 
     """
@@ -88,7 +143,6 @@ def polygon_area(poly):
         )
     for vtx in poly:
         if not isinstance(vtx, list) and not isinstance(vtx, tuple):
-            print(type(vtx))
             raise TypeError(
                 f"ERROR polygon_area function, an input is not a list: input {vtx}"
             )
@@ -145,27 +199,27 @@ def check_complanarity(vert_list_tot, precision=1):
 
     # Check input data type
 
-    if not isinstance(vert_list_tot, list):
-        raise TypeError(
-            f"ERROR check_complanarity function, the input is not a list: input {vert_list_tot}"
-        )
-    for vtx in vert_list_tot:
-        if not isinstance(vtx, list):
-            raise TypeError(
-                f"ERROR check_complanarity function, an input is not a list: input {vtx}"
-            )
-        if len(vtx) != 3:
-            raise TypeError(
-                f"ERROR check_complanarity function, a vertex is not a list of 3 components: input {vtx}"
-            )
-        try:
-            vtx[0] = float(vtx[0])
-            vtx[1] = float(vtx[1])
-            vtx[2] = float(vtx[2])
-        except ValueError:
-            raise ValueError(
-                f"ERROR check_complanarity function, a coordinate is not a float: input {vtx}"
-            )
+    # if not isinstance(vert_list_tot, list):
+    #     raise TypeError(
+    #         f"ERROR check_complanarity function, the input is not a list: input {vert_list_tot}"
+    #     )
+    # for vtx in vert_list_tot:
+    #     if not isinstance(vtx, list):
+    #         raise TypeError(
+    #             f"ERROR check_complanarity function, an input is not a list: input {vtx}"
+    #         )
+    #     if len(vtx) != 3:
+    #         raise TypeError(
+    #             f"ERROR check_complanarity function, a vertex is not a list of 3 components: input {vtx}"
+    #         )
+    #     try:
+    #         vtx[0] = float(vtx[0])
+    #         vtx[1] = float(vtx[1])
+    #         vtx[2] = float(vtx[2])
+    #     except ValueError:
+    #         raise ValueError(
+    #             f"ERROR check_complanarity function, a coordinate is not a float: input {vtx}"
+    #         )
     try:
         precision = float(precision)
     except ValueError:
@@ -251,62 +305,7 @@ def centroid(vert_list):
 #%%
 
 
-def normal_versor_2(vert_list):
-
-    """
-    Alternative
-    This function starting from three points defines the normal vector of the plane
-    
-    Parameters
-    ----------
-    vert_list : list of list of floats (polygon)
-        list with n lists of three floats (n vertices)
- 
-    Returns
-    -------
-    np.array: coordinates of the centroid (3 components)
-    
-    """
-
-    # Check input data type
-
-    if not isinstance(vert_list, list):
-        raise TypeError(
-            f"ERROR normal_versor_2 function, the input is not a list: input {vert_list}"
-        )
-    # if len(vert_list) > 3:
-    # wrn(f"normalAlternative function, there vertlist should be 3 components long: vertList {vertList}")
-
-    for vtx in vert_list:
-        if not isinstance(vtx, list):
-            raise TypeError(
-                f"ERROR normalAlternative function, an input is not a list: input {vtx}"
-            )
-        if len(vtx) != 3:
-            raise TypeError(
-                f"ERROR normalAlternative function, a vertex is not a list of 3 components: input {vtx}"
-            )
-        try:
-            vtx[0] = float(vtx[0])
-            vtx[1] = float(vtx[1])
-            vtx[2] = float(vtx[2])
-        except ValueError:
-            raise ValueError(
-                f"ERROR normalAlternative function, a coordinate is not a float: input {vtx}"
-            )
-    c = centroid(vert_list)
-    crossProd = np.array([0.0, 0, 0])
-    for i in range(len(vert_list)):
-        a = np.array(vert_list[i - 1]) - c
-        b = np.array(vert_list[i]) - c
-        crossProd += np.cross(a, b)
-    return crossProd / np.linalg.norm(crossProd)
-
-
-#%%
-
-
-def project(x, proj_axis):
+def _project(x, proj_axis):
 
     """
     Internal Function
@@ -320,7 +319,7 @@ def project(x, proj_axis):
 #%%
 
 
-def project_inv(x, proj_axis, a, v):
+def _project_inv(x, proj_axis, a, v):
 
     """
     Internal Function
