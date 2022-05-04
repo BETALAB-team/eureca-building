@@ -17,10 +17,16 @@ from eureca_building.material import Material, AirGapMaterial
 from eureca_building.window import SimpleWindow
 from eureca_building.construction import Construction
 from eureca_building.construction_dataset import ConstructionDataset
+from eureca_building.surface import Surface
 from eureca_building.exceptions import (
     MaterialPropertyOutsideBoundaries,
     MaterialPropertyNotFound,
     WrongConstructionType,
+    Non3ComponentsVertex,
+    WindowToWallRatioOutsideBoundaries,
+    InvalidSurfaceType,
+    NonPlanarSurface,
+    NegativeSurfaceArea,
 )
 
 
@@ -175,3 +181,13 @@ class TestConstructionDataset:
         )
 
         dataset = ConstructionDataset.read_excel(path)
+
+
+class TestSurface:
+    """
+    This is a test class for the pytest module.
+    It tests Surface class and its property
+    """
+
+    def test_creation_of_surface(self):
+        Surface("Surface 1", vertices=((0, 0, 0), (0, 1, 1), (0, 1, 2),))

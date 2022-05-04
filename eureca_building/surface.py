@@ -11,7 +11,7 @@ __maintainer__ = "Enrico Prataviera"
 import numpy as np
 
 from eureca_building.logs import logs_printer
-from eureca_building.exeptions import (
+from eureca_building.exceptions import (
     Non3ComponentsVertex,
     WindowToWallRatioOutsideBoundaries,
     InvalidSurfaceType,
@@ -20,7 +20,7 @@ from eureca_building.exeptions import (
 )
 from eureca_building._geometry_auxiliary_functions import (
     check_complanarity,
-    poly_area,
+    polygon_area,
     normal_versor_2,
 )
 
@@ -48,9 +48,9 @@ class Surface:
         self,
         name: str,
         vertices: tuple = ([0, 0, 0], [0, 0, 0], [0, 0, 0]),
-        azimuth_subdivisions: int = 8,
-        height_subdivisions: int = 3,
         wwr: float = 0.0,
+        azimuth_subdivisions=None,
+        height_subdivisions=None,
         surface_type=None,
     ):
         """
@@ -86,21 +86,11 @@ class Surface:
         """
 
         self.name = name
-        self.vertices = vertices
-        self.azimuth_subdivisions = azimuth_subdivisions
-        self.height_subdivisions = height_subdivisions
-        self.wwr = wwr
-        self.surface_type = surface_type
+        self.__vertices = vertices
 
-        # Check coplanarity
-
-        if not check_complanarity(self.vertices):
-            raise NonPlanarSurface(f"Surface {self.name}. Non planar points")
         # Area calculation
 
-        self.area = poly_area(self.vertices)
-        if self.area == 0.0:
-            self.area = 0.0000001
+        self.area = polygon_area(self.__vertices)
         """
         Considering only three points in calculating the normal vector could create
         reverse orientations if the three points are in a non-convex angle of the surface
@@ -111,14 +101,18 @@ class Surface:
         reference: https://stackoverflow.com/questions/32274127/how-to-efficiently-determine-the-normal-to-a-polygon-in-3d-space
         """
 
-        self.normal = normal_versor_2(self.vertList)
+        self.normal = normal_versor_2(self.__vertices)
 
         self._set_azimuth_and_zenith()
-        # Run in sequence
-        self._set_azimuth_and_zenith_solar_radiation()
 
-        if isinstance(surface_type, None):
-            self._set_auto_surface_type()
+        # self.wwr = wwr
+        # self.surface_type = surface_type
+        # self.azimuth_subdivisions = azimuth_subdivisions
+        # self.height_subdivisions = height_subdivisions
+        # self._set_azimuth_and_zenith_solar_radiation()
+
+        # if isinstance(surface_type, None):
+        #     self._set_auto_surface_type()
         # # Set the window area
 
         # if self.type == "ExtWall":
@@ -141,11 +135,11 @@ class Surface:
         #     self.opaqueArea = 0.0000001  # Avoid zero division
 
     @property
-    def vertices(self) -> tuple:
+    def _vertices(self) -> tuple:
         return self._vertices
 
-    @vertices.setter
-    def vertices(self, value: tuple):
+    @_vertices.setter
+    def _vertices(self, value: tuple):
         try:
             value = tuple(value)
         except ValueError:
@@ -160,13 +154,17 @@ class Surface:
                     f"Surface {self.name} has a vertex with len() != 3: {value}"
                 )
             try:
-                vtx[0] = float(vtx[0])
-                vtx[1] = float(vtx[1])
-                vtx[2] = float(vtx[2])
+                float(vtx[0])
+                float(vtx[1])
+                float(vtx[2])
             except ValueError:
                 raise ValueError(
                     f"Surface {self.name}. One vertex contains non float values: {vtx}"
                 )
+            # Check coplanarity
+
+            if not check_complanarity(self.__vertices):
+                raise NonPlanarSurface(f"Surface {self.name}. Non planar points")
         self._vertices = value
 
     @property
@@ -261,7 +259,10 @@ class Surface:
             raise NegativeSurfaceArea(
                 f"Surface {self.name}, negative surface area: {value}"
             )
-        self._area = value
+        if float(value) == 0.0:
+            self._area = 1e-10
+        else:
+            self._area = value
 
     def _set_azimuth_and_zenith(self):
 
@@ -354,7 +355,7 @@ class Surface:
         """
 
         hmax = 0
-        for vert in self.vertices:
+        for vert in self.__vertices:
             hmax = max(hmax, vert[2])
         return hmax
 
@@ -375,7 +376,7 @@ class Surface:
         """
 
         hmin = 10000
-        for vert in self.vertices:
+        for vert in self.__vertices:
             hmin = min(hmin, vert[2])
         return hmin
 

@@ -83,7 +83,7 @@ def normal_versor_2(vert_list):
 
     # Check input data type
 
-    if not isinstance(vert_list, list):
+    if not isinstance(vert_list, tuple):
         raise TypeError(
             f"ERROR normal_versor_2 function, the input is not a list: input {vert_list}"
         )
@@ -91,7 +91,7 @@ def normal_versor_2(vert_list):
     # wrn(f"normalAlternative function, there vertlist should be 3 components long: vertList {vertList}")
 
     for vtx in vert_list:
-        if not isinstance(vtx, list):
+        if not isinstance(vtx, tuple):
             raise TypeError(
                 f"ERROR normalAlternative function, an input is not a list: input {vtx}"
             )
@@ -100,9 +100,9 @@ def normal_versor_2(vert_list):
                 f"ERROR normalAlternative function, a vertex is not a list of 3 components: input {vtx}"
             )
         try:
-            vtx[0] = float(vtx[0])
-            vtx[1] = float(vtx[1])
-            vtx[2] = float(vtx[2])
+            float(vtx[0])
+            float(vtx[1])
+            float(vtx[2])
         except ValueError:
             raise ValueError(
                 f"ERROR normalAlternative function, a coordinate is not a float: input {vtx}"
@@ -137,7 +137,7 @@ def polygon_area(poly):
 
     # Check input data type
 
-    if not isinstance(poly, list):
+    if not isinstance(poly, tuple):
         raise TypeError(
             f"ERROR polygon_area function, the input is not a list: input {poly}"
         )
@@ -173,7 +173,7 @@ def polygon_area(poly):
         total[0] += prod[0]
         total[1] += prod[1]
         total[2] += prod[2]
-    result = np.dot(total, normal_versor_2(poly[0], poly[1], poly[2]))
+    result = np.dot(total, normal_versor_2((poly[0], poly[1], poly[2])))
     return float(abs(result / 2))
 
 
@@ -274,12 +274,12 @@ def centroid(vert_list):
 
     # Check input data type
 
-    if not isinstance(vert_list, list):
+    if not isinstance(vert_list, tuple):
         raise TypeError(
             f"ERROR centroid function, the input is not a list: input {vert_list}"
         )
     for vtx in vert_list:
-        if not isinstance(vtx, list):
+        if not isinstance(vtx, tuple):
             raise TypeError(
                 f"ERROR centroid function, an input is not a list: input {vtx}"
             )
@@ -288,9 +288,9 @@ def centroid(vert_list):
                 f"ERROR centroid function, a vertex is not a list of 3 components: input {vtx}"
             )
         try:
-            vtx[0] = float(vtx[0])
-            vtx[1] = float(vtx[1])
-            vtx[2] = float(vtx[2])
+            float(vtx[0])
+            float(vtx[1])
+            float(vtx[2])
         except ValueError:
             raise ValueError(
                 f"ERROR centroid function, a coordinate is not a float: input {vtx}"
