@@ -13,6 +13,7 @@ import numpy as np
 from eureca_building.logs import logs_printer
 from eureca_building.exceptions import (
     Non3ComponentsVertex,
+    SurfaceWrongNumberOfVertices,
     WindowToWallRatioOutsideBoundaries,
     InvalidSurfaceType,
     NonPlanarSurface,
@@ -48,9 +49,8 @@ class Surface:
         self,
         name: str,
         vertices: tuple = ([0, 0, 0], [0, 0, 0], [0, 0, 0]),
-        wwr: float = 0.0,
-        azimuth_subdivisions=None,
-        height_subdivisions=None,
+        wwr=None,
+        subdivisions_solar_calc=None,
         surface_type=None,
     ):
         """
@@ -62,12 +62,15 @@ class Surface:
             Name.
         vertices : tuple, optional
             List of vertixes coordinates [m]. The default is ([0, 0, 0], [0, 0, 0], [0, 0, 0]).
-        azimuth_subdivisions : int, optional
-            Number of azimuth discretization for radiation purposes. The default is 8.
-        height_subdivisions : int, optional
-            Number of heaigh discretization for radiation purposes. The default is 3.
         wwr : float, optional
             window to wall ratio (between  and 0 and 1). The default is 0.0.
+        subdivisions_solar_calc : dict, optional
+            keys:
+                azimuth_subdivisions : int, optional
+                    Number of azimuth discretization for radiation purposes. The default is 8.
+                height_subdivisions : int, optional
+                    Number of heaigh discretization for radiation purposes. The default is 3.
+        
         surface_type : str, optional
             Type of surface 'ExtWall' or 'GroundFloor' or 'Roof'.
             If not provided autocalculate.
@@ -86,11 +89,11 @@ class Surface:
         """
 
         self.name = name
-        self.__vertices = vertices
+        self._vertices = vertices
 
         # Area calculation
 
-        self.area = polygon_area(self.__vertices)
+        self._area = polygon_area(self._vertices)
         """
         Considering only three points in calculating the normal vector could create
         reverse orientations if the three points are in a non-convex angle of the surface
@@ -101,15 +104,18 @@ class Surface:
         reference: https://stackoverflow.com/questions/32274127/how-to-efficiently-determine-the-normal-to-a-polygon-in-3d-space
         """
 
-        self.normal = normal_versor_2(self.__vertices)
+        self._normal = normal_versor_2(self._vertices)
 
         self._set_azimuth_and_zenith()
 
-        # self.wwr = wwr
+        if wwr is not None:
+            self._wwr = wwr
+        else:
+            self._wwr = 0.0
+        # Param Solar Calc
+        if subdivisions_solar_calc is not None:
+            self.subdivisions_solar_calc = subdivisions_solar_calc
         # self.surface_type = surface_type
-        # self.azimuth_subdivisions = azimuth_subdivisions
-        # self.height_subdivisions = height_subdivisions
-        # self._set_azimuth_and_zenith_solar_radiation()
 
         # if isinstance(surface_type, None):
         #     self._set_auto_surface_type()
@@ -136,7 +142,7 @@ class Surface:
 
     @property
     def _vertices(self) -> tuple:
-        return self._vertices
+        return self.__vertices
 
     @_vertices.setter
     def _vertices(self, value: tuple):
@@ -144,6 +150,10 @@ class Surface:
             value = tuple(value)
         except ValueError:
             raise TypeError(f"Vertices of surface {self.name} are not a tuple: {value}")
+        if len(value) < 3:  # Not a plane - no area
+            raise SurfaceWrongNumberOfVertices(
+                f"Surface {self.name}. Number of vertices lower than 3: {value}"
+            )
         for vtx in value:
             if not isinstance(vtx, tuple):
                 raise TypeError(
@@ -163,16 +173,77 @@ class Surface:
                 )
             # Check coplanarity
 
-            if not check_complanarity(self.__vertices):
+            if not check_complanarity(value):
                 raise NonPlanarSurface(f"Surface {self.name}. Non planar points")
-        self._vertices = value
+        self.__vertices = value
 
     @property
-    def azimuth_subdivisions(self) -> int:
-        return self._azimuth_subdivisions
+    def _area(self) -> float:
+        return self.__area
 
-    @azimuth_subdivisions.setter
-    def azimuth_subdivisions(self, value: int):
+    @_area.setter
+    def _area(self, value: float):
+        try:
+            value = float(value)
+        except ValueError:
+            raise TypeError(f"Surface {self.name}, area is not an float: {value}")
+        if value < 0.0:
+            raise NegativeSurfaceArea(
+                f"Surface {self.name}, negative surface area: {value}"
+            )
+        if float(value) == 0.0:
+            self.__area = 1e-10
+        else:
+            self.__area = value
+
+    @property
+    def _wwr(self) -> float:
+        return self.__wwr
+
+    @_wwr.setter
+    def _wwr(self, value: float):
+        try:
+            value = float(value)
+        except ValueError:
+            raise TypeError(f"Surface {self.name}, wwr is not an float: {value}")
+        if value < 0.0 or value > 0.999:
+            raise WindowToWallRatioOutsideBoundaries(
+                f"Surface {self.name}, wwrS must included between 0 and 1: {value}"
+            )
+        self._calc_glazed_and_opaque_areas(value)
+        self.__wwr = value
+
+    @property
+    def subdivisions_solar_calc(self) -> dict:
+        return self._subdivisions_solar_calc
+
+    @subdivisions_solar_calc.setter
+    def subdivisions_solar_calc(self, value: dict):
+        if not isinstance(value, dict):
+            raise TypeError(
+                f"Surface {self.name}, subdivisions_solar_calc must be a dict: {value}"
+            )
+        try:
+            self._azimuth_subdivisions = value["azimuth_subdivisions"]
+        except KeyError:
+            raise KeyError(
+                f"Surface {self.name}, subdivisions_solar_calc must contain an azimuth_subdivisions key: {value}"
+            )
+        try:
+            self._height_subdivisions = value["height_subdivisions"]
+        except KeyError:
+            raise KeyError(
+                f"Surface {self.name}, subdivisions_solar_calc must contain an height_subdivisions key: {value}"
+            )
+        self._subdivisions_solar_calc = value
+        self._set_azimuth_and_zenith_solar_radiation()
+
+    @property
+    def _azimuth_subdivisions(self) -> int:
+        return self.__azimuth_subdivisions
+
+    @_azimuth_subdivisions.setter
+    def _azimuth_subdivisions(self, value: int):
         try:
             value = int(value)
         except ValueError:
@@ -189,14 +260,14 @@ class Surface:
                 f"For one or more surfaces azimuth_subdivisions is high: {value}.\nThe calculation time can be long"
             )
             self.__warning_azimuth_subdivisions = True
-        self._azimuth_subdivisions = value
+        self.__azimuth_subdivisions = value
 
     @property
-    def height_subdivisions(self) -> int:
-        return self._height_subdivisions
+    def _height_subdivisions(self) -> int:
+        return self.__height_subdivisions
 
-    @height_subdivisions.setter
-    def height_subdivisions(self, value: int):
+    @_height_subdivisions.setter
+    def _height_subdivisions(self, value: int):
         try:
             value = int(value)
         except ValueError:
@@ -213,23 +284,7 @@ class Surface:
                 f"For one or more surfaces height_subdivisions is high: {value}.\nThe calculation time can be long"
             )
             self.__warning_height_subdivisions = True
-        self._height_subdivisions = value
-
-    @property
-    def wwr(self) -> float:
-        return self._wwr
-
-    @wwr.setter
-    def wwr(self, value: float):
-        try:
-            value = float(value)
-        except ValueError:
-            raise TypeError(f"Surface {self.name}, wwr is not an float: {value}")
-        if value < 0.0 or value > 0.999:
-            raise WindowToWallRatioOutsideBoundaries(
-                f"Surface {self.name}, wwrS must included between 0 and 1: {value}"
-            )
-        self._wwr = value
+        self.__height_subdivisions = value
 
     @property
     def surface_type(self):
@@ -245,69 +300,54 @@ class Surface:
             )
         self._surface_type = value
 
-    @property
-    def area(self) -> float:
-        return self._area
-
-    @area.setter
-    def area(self, value: float):
-        try:
-            value = float(value)
-        except ValueError:
-            raise TypeError(f"Surface {self.name}, area is not an float: {value}")
-        if value < 0.0:
-            raise NegativeSurfaceArea(
-                f"Surface {self.name}, negative surface area: {value}"
-            )
-        if float(value) == 0.0:
-            self._area = 1e-10
-        else:
-            self._area = value
-
     def _set_azimuth_and_zenith(self):
 
         # set the azimuth and zenith
 
-        if self.normal[2] == 1:
+        if self._normal[2] == 1:
             self._height = 0
             self._azimuth = 0
-        elif self.normal[2] == -1:
+        elif self._normal[2] == -1:
             self._height = 180
             self._azimuth = 0
         else:
             self._height = 90 - np.degrees(
                 np.arctan(
                     (
-                        self.normal[2]
-                        / (np.sqrt(self.normal[0] ** 2 + self.normal[1] ** 2))
+                        self._normal[2]
+                        / (np.sqrt(self._normal[0] ** 2 + self._normal[1] ** 2))
                     )
                 )
             )
-            if self.normal[1] == 0:
-                if self.normal[0] > 0:
+            if self._normal[1] == 0:
+                if self._normal[0] > 0:
                     self._azimuth = -90
-                elif self.normal[0] < 0:
+                elif self._normal[0] < 0:
                     self._azimuth = 90
             else:
-                if self.normal[1] < 0:
+                if self._normal[1] < 0:
                     self._azimuth = np.degrees(
-                        np.arctan(self.normal[0] / self.normal[1])
+                        np.arctan(self._normal[0] / self._normal[1])
                     )
                 else:
-                    if self.normal[0] < 0:
+                    if self._normal[0] < 0:
                         self._azimuth = 180 + np.degrees(
-                            np.arctan(self.normal[0] / self.normal[1])
+                            np.arctan(self._normal[0] / self._normal[1])
                         )
                     else:
                         self._azimuth = -180 + np.degrees(
-                            np.arctan(self.normal[0] / self.normal[1])
+                            np.arctan(self._normal[0] / self._normal[1])
                         )
+
+    def _calc_glazed_and_opaque_areas(self, wwr):
+        self._opaque_area = (1 - wwr) * self._area
+        self._glazed_area = wwr * self._area
 
     def _set_azimuth_and_zenith_solar_radiation(self):
         # Azimuth and tilt approximation
 
-        delta_a = 360 / (2 * self.azimuth_subdivisions)
-        delta_h = 90 / (2 * self.height_subdivisions)
+        delta_a = 360 / (2 * self._azimuth_subdivisions)
+        delta_h = 90 / (2 * self._height_subdivisions)
         x = np.arange(-delta_h, 90 + 2 * delta_h, 2 * delta_h)
 
         for n in range(len(x) - 1):

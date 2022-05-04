@@ -23,6 +23,7 @@ from eureca_building.exceptions import (
     MaterialPropertyNotFound,
     WrongConstructionType,
     Non3ComponentsVertex,
+    SurfaceWrongNumberOfVertices,
     WindowToWallRatioOutsideBoundaries,
     InvalidSurfaceType,
     NonPlanarSurface,
@@ -190,4 +191,50 @@ class TestSurface:
     """
 
     def test_creation_of_surface(self):
-        Surface("Surface 1", vertices=((0, 0, 0), (0, 1, 1), (0, 1, 2),))
+        surf = Surface("Surface 1", vertices=((0, 0, 0), (0, 1, 1), (0, 1, 2),))
+        print(surf._vertices)
+
+    def test_creation_of_surface_fake(self):
+        with pytest.raises(SurfaceWrongNumberOfVertices):
+            Surface("Surface 1", vertices=((0, 1, 1), (0, 1, 2),))
+
+    def test_nocoplanar_surface(self):
+        with pytest.raises(NonPlanarSurface):
+            Surface("Surface 1", vertices=((0, 0, 0), (0, 1, 1), (0, 1, 2), (1, 2, 4)))
+
+    def test_wwr_surface(self):
+        surf_1 = Surface(
+            "Surface 1", vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)), wwr=0.4,
+        )
+
+        assert surf_1._opaque_area == 0.6
+        assert surf_1._glazed_area == 0.4
+
+    def test_wwr_surface_2(self):
+        with pytest.raises(WindowToWallRatioOutsideBoundaries):
+            Surface(
+                "Surface 1",
+                vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+                wwr=2.0,
+            )
+
+    def test_wwr_surface_3(self):
+        surf_1 = Surface(
+            "Surface 1", vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)), wwr=0.4,
+        )
+
+        surf_1._wwr = 0.2
+
+        assert surf_1._opaque_area == 0.8
+        assert surf_1._glazed_area == 0.2
+
+    def test_subdivision_solar_calc(self):
+        surf_1 = Surface(
+            "Surface 1",
+            vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+            wwr=0.4,
+            subdivisions_solar_calc={
+                "azimuth_subdivisions": 3,
+                "height_subdivisions": 5,
+            },
+        )

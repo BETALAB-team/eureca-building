@@ -71,6 +71,11 @@ class Non3ComponentsVertex(Exception):
     pass
 
 
+class SurfaceWrongNumberOfVertices(Exception):
+
+    pass
+
+
 class WindowToWallRatioOutsideBoundaries(Exception):
 
     pass
