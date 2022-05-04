@@ -190,6 +190,10 @@ class TestSurface:
     It tests Surface class and its property
     """
 
+    def test_creation_of_surface_zero(self):
+        surf = Surface("Surface 1")
+        print(surf._vertices)
+
     def test_creation_of_surface(self):
         surf = Surface("Surface 1", vertices=((0, 0, 0), (0, 1, 1), (0, 1, 2),))
         print(surf._vertices)
@@ -238,3 +242,68 @@ class TestSurface:
                 "height_subdivisions": 5,
             },
         )
+
+    def test_subdivision_solar_calc_2(self):
+        with pytest.raises(ValueError):
+            surf_1 = Surface(
+                "Surface 1",
+                vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+                wwr=0.4,
+                subdivisions_solar_calc={
+                    "azimuth_subdivisions": 1000,
+                    "height_subdivisions": 5,
+                },
+            )
+
+    def test_subdivision_solar_calc_3(self):
+        with pytest.raises(ValueError):
+            surf_1 = Surface(
+                "Surface 1",
+                vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+                wwr=0.4,
+                subdivisions_solar_calc={
+                    "azimuth_subdivisions": 3,
+                    "height_subdivisions": 500000,
+                },
+            )
+
+    def test_subdivision_solar_calc_4(self):
+        with pytest.raises(TypeError):
+            surf_1 = Surface(
+                "Surface 1",
+                vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+                wwr=0.4,
+                subdivisions_solar_calc={
+                    "azimuth_subdivisions": "a",
+                    "height_subdivisions": 500000,
+                },
+            )
+
+    def test_subdivision_solar_calc_5(self):
+        surf_1 = Surface(
+            "Surface 1", vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)), wwr=0.4,
+        )
+        surf_1.subdivisions_solar_calc = {
+            "azimuth_subdivisions": 8,
+            "height_subdivisions": 3,
+        }
+
+    def test_surface_type(self):
+        for s_type in ["ExtWall", "GroundFloor", "Roof"]:
+            Surface(
+                "Surface 1",
+                vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+                wwr=0.4,
+                surface_type=s_type,
+            )
+
+    def test_surface_type_2(self):
+
+        surf_1 = Surface(
+            "Surface 1",
+            vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+            wwr=0.4,
+            surface_type="ExtWall",
+        )
+        with pytest.raises(InvalidSurfaceType):
+            surf_1.surface_type = "bds"

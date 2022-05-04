@@ -48,7 +48,7 @@ class Surface:
     def __init__(
         self,
         name: str,
-        vertices: tuple = ([0, 0, 0], [0, 0, 0], [0, 0, 0]),
+        vertices: tuple = ((0, 0, 0), (0, 0, 0), (0, 0, 0)),
         wwr=None,
         subdivisions_solar_calc=None,
         surface_type=None,
@@ -115,30 +115,11 @@ class Surface:
         # Param Solar Calc
         if subdivisions_solar_calc is not None:
             self.subdivisions_solar_calc = subdivisions_solar_calc
-        # self.surface_type = surface_type
-
-        # if isinstance(surface_type, None):
-        #     self._set_auto_surface_type()
-        # # Set the window area
-
-        # if self.type == "ExtWall":
-        #     self.centroid_coord = centroid(vertList)
-        #     if 135 < self.azimuth_round <= 180 or -180 <= self.azimuth_round < -135:
-        #         self.wwr = wwr[0]
-        #     elif -135 <= self.azimuth_round <= -45:
-        #         self.wwr = wwr[1]
-        #     elif -45 < self.azimuth_round < 45:
-        #         self.wwr = wwr[2]
-        #     elif 45 <= self.azimuth_round <= 135:
-        #         self.wwr = wwr[3]
-        # else:
-        #     self.wwr = 0
-        # self.opaqueArea = (1 - self.wwr) * self.area
-        # self.glazedArea = (self.wwr) * self.area
-        # if self.glazedArea == 0:
-        #     self.glazedArea = 0.0000001  # Avoid zero division
-        # if self.opaqueArea == 0:
-        #     self.opaqueArea = 0.0000001  # Avoid zero division
+        # Surfcae type
+        if surface_type is None:
+            self._set_auto_surface_type()
+        else:
+            self.surface_type = surface_type
 
     @property
     def _vertices(self) -> tuple:
@@ -292,7 +273,7 @@ class Surface:
 
     @surface_type.setter
     def surface_type(self, value):
-        if not isinstance(value, str) and not isinstance(value, None):
+        if not isinstance(value, str) and value is not None:
             raise TypeError(f"Surface {self.name}, surface_type is not a str: {value}")
         if value not in ["ExtWall", "GroundFloor", "Roof"]:
             raise InvalidSurfaceType(
