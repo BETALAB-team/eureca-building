@@ -24,5 +24,8 @@ setup(
        "pandas",
        "pytest",
        "matplotlib",
+       "scipy",
+       "openpyxl",
+       "xlrd",
    ],
 )
