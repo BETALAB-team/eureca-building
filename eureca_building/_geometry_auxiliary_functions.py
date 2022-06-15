@@ -9,12 +9,12 @@ __license__ = "MIT"
 __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
+import logging
+
 import numpy as np
-from eureca_building.logs import logs_printer
 
 
 def normal_versor(a, b, c):
-
     """
     This function starting from three points defines the normal vector of the plane
     
@@ -61,11 +61,10 @@ def normal_versor(a, b, c):
     return (x / magnitude, y / magnitude, z / magnitude)
 
 
-#%%
+# %%
 
 
 def normal_versor_2(vert_list):
-
     """
     Alternative
     This function starting from three points defines the normal vector of the plane
@@ -116,11 +115,10 @@ def normal_versor_2(vert_list):
     return crossProd / np.linalg.norm(crossProd)
 
 
-#%%
+# %%
 
 
 def polygon_area(poly):
-
     """
     From a list of points calculates the area of the polygon
     
@@ -162,7 +160,7 @@ def polygon_area(poly):
     # area of polygon poly
 
     if len(poly) < 3:  # Not a plane - no area
-        logs_printer("WARNING number of vertices lower than 3, the area will be zero")
+        logging.error("WARNING number of vertices lower than 3, the area will be zero")
         return 0
     total = [0, 0, 0]
     N = len(poly)
@@ -177,7 +175,7 @@ def polygon_area(poly):
     return float(abs(result / 2))
 
 
-#%%
+# %%
 
 
 def check_complanarity(vert_list_tot, precision=1):
@@ -230,7 +228,7 @@ def check_complanarity(vert_list_tot, precision=1):
 
     flag = True
     for i in range(len(vert_list_tot) - 3):
-        vert_list = vert_list_tot[i : (i + 4)]
+        vert_list = vert_list_tot[i: (i + 4)]
         a1 = vert_list[1][0] - vert_list[0][0]
         b1 = vert_list[1][1] - vert_list[0][1]
         c1 = vert_list[1][2] - vert_list[0][2]
@@ -246,18 +244,17 @@ def check_complanarity(vert_list_tot, precision=1):
         # checking if the 4th point satisfies
         # the above equation
         if not (
-            np.abs(a * vert_list[3][0] + b * vert_list[3][1] + c * vert_list[3][2] + d)
-            < precision
+                np.abs(a * vert_list[3][0] + b * vert_list[3][1] + c * vert_list[3][2] + d)
+                < precision
         ):
             flag = False
     return flag
 
 
-#%%
+# %%
 
 
 def centroid(vert_list):
-
     """
     From a list of points calculates the centroid
     
@@ -302,11 +299,10 @@ def centroid(vert_list):
     return c / len(vert_list)
 
 
-#%%
+# %%
 
 
 def _project(x, proj_axis):
-
     """
     Internal Function
       
@@ -316,11 +312,10 @@ def _project(x, proj_axis):
     return tuple(c for i, c in enumerate(x) if i != proj_axis)
 
 
-#%%
+# %%
 
 
 def _project_inv(x, proj_axis, a, v):
-
     """
     Internal Function
       

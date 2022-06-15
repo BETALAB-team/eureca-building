@@ -10,38 +10,16 @@ __maintainer__ = "Enrico Prataviera"
 
 
 import os
+import logging
 
-global log_path
-log_file = os.path.join(".", "logs.txt")
-log_path = os.path.join(*log_file.split(os.sep)[:-1])
-if not os.path.exists(log_path):
-    os.mkdir(log_path)
-with open(log_file, "w") as log_file_:
-    # Just to clear the log file
-    log_file_.write("")
-
-
-def logs_printer(message):
-    """
-    Function to write in the log file a message
-
-    Attributes
-    -----------
-    message: str
-        message to write
-
-    Return
-    -----------
-        None
-    """
-    with open(log_file, "a") as log_file_:
-        print("----------------------WARNING---------------------------")
-        print(message)
-        print("--------------------------------------------------------")
-        log_file_.write(
-            f"""
-***************************************************************************
-{message}
-***************************************************************************
-    """
-        )
+# Logging file
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)  # or whatever
+handler = logging.FileHandler(
+    os.path.join(".", "logging.log"), "w", "utf-8"
+)  # or whatever
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)  # or whatever
+handler.setFormatter(formatter)  # Pass handler as a parameter, not assign
+root_logger.addHandler(handler)

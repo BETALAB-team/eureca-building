@@ -13,7 +13,6 @@ import pandas as pd
 from eureca_building.construction import Construction
 from eureca_building.window import SimpleWindow
 from eureca_building.material import Material, AirGapMaterial
-from eureca_building.logs import logs_printer
 from eureca_building.exceptions import WrongConstructionType, WrongMaterialType
 
 

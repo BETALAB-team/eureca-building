@@ -10,7 +10,6 @@ __maintainer__ = "Enrico Prataviera"
 
 from eureca_building.exceptions import MaterialPropertyOutsideBoundaries
 from eureca_building.units import units, material_limits
-from eureca_building.logs import logs_printer
 
 
 class Material:

@@ -8,9 +8,10 @@ __license__ = "MIT"
 __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
+import logging
+
 import numpy as np
 
-from eureca_building.logs import logs_printer
 from eureca_building.exceptions import (
     Non3ComponentsVertex,
     SurfaceWrongNumberOfVertices,
@@ -237,7 +238,7 @@ class Surface:
                 f"Surface {self.name}, azimuth_subdivisions must be > 1 and lower than 100: {value}"
             )
         if value > 16 and not self.__warning_azimuth_subdivisions:
-            logs_printer(
+            logging.warning(
                 f"For one or more surfaces azimuth_subdivisions is high: {value}.\nThe calculation time can be long"
             )
             self.__warning_azimuth_subdivisions = True
@@ -261,7 +262,7 @@ class Surface:
                 f"Surface {self.name}, height_subdivisions must be > 1 and lower than 50: {value}"
             )
         if value > 6 and not self.__warning_height_subdivisions:
-            logs_printer(
+            logging.warning(
                 f"For one or more surfaces height_subdivisions is high: {value}.\nThe calculation time can be long"
             )
             self.__warning_height_subdivisions = True

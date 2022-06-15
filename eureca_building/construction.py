@@ -8,6 +8,8 @@ __license__ = "MIT"
 __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
+import logging
+
 import pandas as pd
 import numpy as np
 
@@ -17,7 +19,7 @@ from eureca_building.exceptions import (
 )
 from eureca_building.material import Material, AirGapMaterial
 from eureca_building.units import units
-from eureca_building.logs import logs_printer
+
 
 
 # %% OpaqueMaterial class

@@ -13,7 +13,6 @@ import numpy as np
 from scipy.interpolate import splrep
 
 from eureca_building.exceptions import MaterialPropertyOutsideBoundaries
-from eureca_building.logs import logs_printer
 from eureca_building.units import units, window_material_limits
 
 
