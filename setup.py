@@ -9,7 +9,7 @@ classifiers = [
 ]
 
 setup(
-   name='eureca-buildings',
+   name='eureca-building',
    version='0.1.0',
    author='betalab group UNIPD',
    author_email='enrico.prataviera@phd.unipd.it',

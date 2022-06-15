@@ -1,6 +1,8 @@
 eureca_building/__pycache__/
 eureca_building/test/__pycache__/
 eureca_building/example_scripts/__pycache__/
+eureca_building.egg-info/
+.idea/
 venv/
 .pytest_cache
 .spyproject
