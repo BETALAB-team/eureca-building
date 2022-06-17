@@ -12,6 +12,7 @@ import logging
 
 import numpy as np
 
+from eureca_building.construction import Construction
 from eureca_building.exceptions import (
     Non3ComponentsVertex,
     SurfaceWrongNumberOfVertices,
@@ -53,6 +54,7 @@ class Surface:
             wwr=None,
             subdivisions_solar_calc=None,
             surface_type=None,
+            construction=None,
     ):
         """
         Creates the surface object
@@ -62,7 +64,7 @@ class Surface:
         name : str
             Name.
         vertices : tuple, optional
-            List of vertixes coordinates [m]. The default is ([0, 0, 0], [0, 0, 0], [0, 0, 0]).
+            List of vertices coordinates [m]. The default is ([0, 0, 0], [0, 0, 0], [0, 0, 0]).
         wwr : float, optional
             window to wall ratio (between  and 0 and 1). The default is 0.0.
         subdivisions_solar_calc : dict, optional
@@ -70,11 +72,14 @@ class Surface:
                 azimuth_subdivisions : int, optional
                     Number of azimuth discretization for radiation purposes. The default is 8.
                 height_subdivisions : int, optional
-                    Number of heaigh discretization for radiation purposes. The default is 3.
+                    Number of height discretization for radiation purposes. The default is 3.
         
         surface_type : str, optional
             Type of surface 'ExtWall' or 'GroundFloor' or 'Roof'.
             If not provided autocalculate.
+
+        construction: Construction
+            the construction object with the materials
 
         Raises
         ------
@@ -121,6 +126,9 @@ class Surface:
             self._set_auto_surface_type()
         else:
             self.surface_type = surface_type
+
+        if construction is not None:
+            self.construction = construction
 
     @property
     def _vertices(self) -> tuple:
@@ -282,6 +290,16 @@ class Surface:
             )
         self._surface_type = value
 
+    @property
+    def construction(self):
+        return self._construction
+
+    @construction.setter
+    def construction(self, value):
+        if not isinstance(value, Construction):
+            raise TypeError(f"Surface {self.name}, construction must be a Construction object: {type(value)}")
+        self._construction = value
+
     def _set_azimuth_and_zenith(self):
 
         # set the azimuth and zenith
@@ -361,211 +379,16 @@ class Surface:
             self.surface_type = "ExtWall"
 
     def max_height(self):
-
-        """
-        Find the higher vertex
-
-        
-        Parameters
-            ----------
-            None
-                
-        Returns
-        -------
-        float.    [m]     
-        
-        """
-
         hmax = 0
         for vert in self.__vertices:
             hmax = max(hmax, vert[2])
         return hmax
 
     def min_height(self):
-
-        """
-        Find the lower vertex
-
-        
-        Parameters
-            ----------
-            None
-                
-        Returns
-        -------
-        float.        [m] 
-        
-        """
-
         hmin = 10000
         for vert in self.__vertices:
             hmin = min(hmin, vert[2])
         return hmin
-
-    # def reduceInternalHoles(self, hole_area, hole_points_list, rh_gross=1.0):
-    #     self.area -= hole_area * rh_gross
-    #     if self.area < 1e-10:
-    #         self.area = 0.0000001
-    #     self.opaqueArea = (1 - self.wwr) * self.area
-    #     self.glazedArea = (self.wwr) * self.area
-    #     if self.glazedArea == 0:
-    #         self.glazedArea = 0.0000001  # Avoid zero division
-    #     if self.opaqueArea == 0:
-    #         self.opaqueArea = 0.0000001  # Avoid zero division
-    #     try:
-    #         self.internal_holes_list
-    #     except AttributeError:
-    #         self.internal_holes_list = []
-    #     self.internal_holes_list.append(hole_points_list)
-
-    # def checkSurfaceCoincidence(self, otherSurface):
-    #     """
-    #     Check if two surface are coincident
-
-    #     Parameters
-    #         ----------
-    #         otherSurface : EUReCA.RC_classes.geometry.Surface
-    #             another surface object
-
-    #     Returns
-    #     -------
-    #     boolean. Are the surfaces coincident? True/Flase
-    #     """
-
-    #     # Check Input data type
-
-    #     if not isinstance(otherSurface, Surface):
-    #         raise ValueError(
-    #             f"ERROR Surface class, surface {self.name}, checkSurfaceCoincidence. otherSurface is not a Surface object: otherSurface {otherSurface}"
-    #         )
-    #     # Check the coincidence of two surface looking firstly at the coplanarity
-    #     # of the points and then the direction of the normals vectors
-
-    #     flagPoints = False
-    #     plane = self.vertList
-
-    #     # Coplanarity test
-    #     for i in otherSurface.vertList:
-    #         if check_complanarity(plane + [i], precision=5):
-    #             flagPoints = True
-    #     # Normal vector test
-    #     flagNormal = False
-    #     if np.linalg.norm(self.normal + otherSurface.normal) < 0.2:
-    #         flagNormal = True
-    #     return flagNormal and flagPoints
-
-    # def calculateIntersectionArea(self, otherSurface):
-    #     """
-    #     Claculates the area between two adjacent surfaces
-
-    #     reference: https://stackoverflow.com/questions/39003450/transform-3d-polygon-to-2d-perform-clipping-and-transform-back-to-3d
-
-    #     Parameters
-    #         ----------
-    #         otherSurface : EUReCA.RC_classes.geometry.Surface
-    #             another surface object
-
-    #     Returns
-    #     -------
-    #     float. The area [m2]
-    #     """
-
-    #     # Check Input data type
-
-    #     if not isinstance(otherSurface, Surface):
-    #         raise ValueError(
-    #             f"ERROR Surface class, surface {self.name}, calculateIntersectionArea. otherSurface is not a Surface object: otherSurface {otherSurface}"
-    #         )
-    #     # Check the coincidence of two surface looking firstly at the coplanarity
-    #     # of the points and then the direction of the normals vectors
-    #     a = (
-    #         self.normal[0] * self.vertList[0][0]
-    #         + self.normal[1] * self.vertList[0][1]
-    #         + self.normal[2] * self.vertList[0][2]
-    #     )
-    #     proj_axis = max(range(3), key=lambda i: abs(self.normal[i]))
-    #     projA = [project(x, proj_axis) for x in self.vertList]
-    #     projB = [project(x, proj_axis) for x in otherSurface.vertList]
-    #     scaledA = pc.scale_to_clipper(projA)
-    #     scaledB = pc.scale_to_clipper(projB)
-    #     clipper = pc.Pyclipper()
-    #     clipper.AddPath(scaledA, poly_type=pc.PT_SUBJECT, closed=True)
-    #     clipper.AddPath(scaledB, poly_type=pc.PT_CLIP, closed=True)
-    #     intersections = clipper.Execute(
-    #         pc.CT_INTERSECTION, pc.PFT_NONZERO, pc.PFT_NONZERO
-    #     )
-    #     intersections = [pc.scale_from_clipper(i) for i in intersections]
-    #     if len(intersections) == 0:
-    #         return 0
-    #     intersection = [
-    #         project_inv(x, proj_axis, a, self.normal) for x in intersections[0]
-    #     ]
-    #     area = poly_area(intersection)
-    #     return area if area > 0 else 0.0
-
-    # def reduceArea(self, AreaToReduce):
-    #     """
-    #     Reduces the area of the surface
-
-    #     Parameters
-    #         ----------
-    #         AreaToReduce : float
-    #             the area to subtract [m2]
-
-    #     Returns
-    #     -------
-    #     None.
-    #     """
-
-    #     # Check Input data type
-
-    #     if not isinstance(AreaToReduce, float) or AreaToReduce < 0.0:
-    #         try:
-    #             AreaToReduce = float(AreaToReduce)
-    #         except ValueError:
-    #             raise ValueError(
-    #                 f"ERROR Surface class, surface {self.name}, reduceArea. The area is not a positive float: AreaToReduce {AreaToReduce}"
-    #             )
-    #     # Area reduction
-
-    #     if self.area - AreaToReduce > 0.0000001:
-    #         self.area = self.area - AreaToReduce
-    #         self.opaqueArea = (1 - self.wwr) * self.area
-    #         self.glazedArea = (self.wwr) * self.area
-    #     else:
-    #         self.area = 0.0000001
-    #         self.opaqueArea = 0.0000001
-    #         self.glazedArea = 0.0000001
-
-    # def printInfo(self):
-
-    #     """
-    #     Just prints some attributes of the surface
-
-    #     Parameters
-    #         ----------
-    #         None
-
-    #     Returns
-    #     -------
-    #     None.
-    #     """
-
-    #     print(
-    #         "Name: "
-    #         + self.name
-    #         + "\nArea: "
-    #         + str(self.area)
-    #         + "\nType: "
-    #         + str(self.type)
-    #         + "\nAzimuth: "
-    #         + str(self.azimuth)
-    #         + "\nHeight: "
-    #         + str(self.height)
-    #         + "\nVertices: "
-    #         + str(self.vertList)
-    #         + "\n"
-    #     )
 
 
 # %%---------------------------------------------------------------------------------------------------
@@ -581,15 +404,17 @@ class SurfaceInternalMass:
         init
     """
 
-    def __init__(self, name: str, area=float, surface_type=None):
+    def __init__(self, name: str, area: float, surface_type=None, construction=None):
         """
         input:
             area: area of the internal surface
             surfType: 'IntWall' or 'IntCeiling'
 
-        attrubutes:
+        Attributes:
             area
             surfType
+            construction: Construction
+                the construction object with the materials
 
         Parameters
             ----------
@@ -597,10 +422,10 @@ class SurfaceInternalMass:
                 name of the surface
             area: float
                 number of azimuth subdivision [m2]
-            surfType : string
+            surface_type : string
                 string that defines the surface type.
                 'IntWall' or  'IntCeiling'  or 'IntFloor'
-                
+
         Returns
         -------
         None.        
@@ -610,15 +435,9 @@ class SurfaceInternalMass:
         # Check input data type
         self.name = name
         self._area = area
-        self._surface_type = surface_type
-        if not isinstance(name, str):
-            raise TypeError(
-                f"ERROR SurfaceInternalMass class geometry, name is not a string: name {name}"
-            )
-        if not surfType in ["IntWall", "IntCeiling", "IntFloor"]:
-            raise TypeError(
-                f"ERROR SurfaceInternalMass class geometry, surfType is not a correct string: surfType {surfType}"
-            )
+        self.surface_type = surface_type
+        if construction is not None:
+            self.construction = construction
 
     @property
     def _area(self) -> float:
@@ -657,3 +476,13 @@ class SurfaceInternalMass:
                 f"Surface {self.name}, surface_type must choosen from: [ExtWall, GroundFloor, Roof] {value}"
             )
         self._surface_type = value
+
+    @property
+    def construction(self):
+        return self._construction
+
+    @construction.setter
+    def construction(self, value):
+        if not isinstance(value, Construction):
+            raise TypeError(f"Surface {self.name}, construction must be a Construction object: {type(value)}")
+        self._construction = value
