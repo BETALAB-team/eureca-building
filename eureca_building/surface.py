@@ -638,6 +638,8 @@ class SurfaceInternalMass:
             self.__area = 1e-10
         else:
             self.__area = value
+        self._opaque_area = self._area
+        self._glazed_area = 0.
 
     @property
     def surface_type(self):
@@ -655,20 +657,3 @@ class SurfaceInternalMass:
                 f"Surface {self.name}, surface_type must choosen from: [ExtWall, GroundFloor, Roof] {value}"
             )
         self._surface_type = value
-
-
-# %%---------------------------------------------------------------------------------------------------
-# %% SurfaceInternalAdjacent class
-
-
-class SurfaceInternalAdjacent(SurfaceInternalMass):
-    """
-    Inherited from SurfaceInternalMass
-    adds the adjacentZone attribute
-    Currently not used in the code
-    
-    """
-
-    def __init__(self, name, area, surfType="IntCeiling", adjacentZone=None):
-        super().__init__(area, surfType)
-        self.adjacentZone = adjacentZone
