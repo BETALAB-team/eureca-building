@@ -26,11 +26,11 @@ from eureca_building._geometry_auxiliary_functions import (
     normal_versor_2,
 )
 
-#%% Surface class
+
+# %% Surface class
 
 
 class Surface:
-
     """
     Class surface checks the complanarity and calculates the area.
     Then calculates the azimuth and tilt of the surface and set a surface
@@ -47,12 +47,12 @@ class Surface:
     __warning_height_subdivisions = False
 
     def __init__(
-        self,
-        name: str,
-        vertices: tuple = ((0, 0, 0), (0, 0, 0), (0, 0, 0)),
-        wwr=None,
-        subdivisions_solar_calc=None,
-        surface_type=None,
+            self,
+            name: str,
+            vertices: tuple = ((0, 0, 0), (0, 0, 0), (0, 0, 0)),
+            wwr=None,
+            subdivisions_solar_calc=None,
+            surface_type=None,
     ):
         """
         Creates the surface object
@@ -296,8 +296,8 @@ class Surface:
             self._height = 90 - np.degrees(
                 np.arctan(
                     (
-                        self._normal[2]
-                        / (np.sqrt(self._normal[0] ** 2 + self._normal[1] ** 2))
+                            self._normal[2]
+                            / (np.sqrt(self._normal[0] ** 2 + self._normal[1] ** 2))
                     )
                 )
             )
@@ -568,12 +568,11 @@ class Surface:
     #     )
 
 
-#%%---------------------------------------------------------------------------------------------------
-#%% SurfaceInternalMass class
+# %%---------------------------------------------------------------------------------------------------
+# %% SurfaceInternalMass class
 
 
 class SurfaceInternalMass:
-
     """
     Class to define a surface for thermal capacity using area and surface type
     with a specific geometry
@@ -582,7 +581,7 @@ class SurfaceInternalMass:
         init
     """
 
-    def __init__(self, name, area=0.0000001, surfType="IntWall"):
+    def __init__(self, name: str, area=float, surface_type=None):
         """
         input:
             area: area of the internal surface
@@ -609,35 +608,60 @@ class SurfaceInternalMass:
         """
 
         # Check input data type
-
+        self.name = name
+        self._area = area
+        self._surface_type = surface_type
         if not isinstance(name, str):
             raise TypeError(
                 f"ERROR SurfaceInternalMass class geometry, name is not a string: name {name}"
-            )
-        if not isinstance(area, float) or area < 0.0:
-            raise TypeError(
-                f"ERROR SurfaceInternalMass class geometry, area is not a positive float: area {area}"
             )
         if not surfType in ["IntWall", "IntCeiling", "IntFloor"]:
             raise TypeError(
                 f"ERROR SurfaceInternalMass class geometry, surfType is not a correct string: surfType {surfType}"
             )
-        # Sets some attributes
 
-        self.name = name
-        self.area = area
-        self.type = surfType
-        if self.area < 0.0000001:
-            self.area = 0.0000001
-        self.opaqueArea = self.area
+    @property
+    def _area(self) -> float:
+        return self.__area
+
+    @_area.setter
+    def _area(self, value: float):
+        try:
+            value = float(value)
+        except ValueError:
+            raise TypeError(f"SurfaceInternalMass {self.name}, area is not an float: {value}")
+        if value < 0.0:
+            raise NegativeSurfaceArea(
+                f"SurfaceInternalMass {self.name}, negative surface area: {value}"
+            )
+        if float(value) == 0.0:
+            self.__area = 1e-10
+        else:
+            self.__area = value
+
+    @property
+    def surface_type(self):
+        return self._surface_type
+
+    @surface_type.setter
+    def surface_type(self, value):
+        if not isinstance(value, str) and value is not None:
+            raise TypeError(f"SurfaceInternalMass {self.name}, surface_type is not a str: {value}")
+        if value == None:
+            logging.warning(f"SurfaceInternalMass {self.name}, surface_type is None: {value}. IntWall will be assigned")
+            value = "IntWall"
+        if value not in ["IntWall", "IntCeiling", "IntFloor"]:
+            raise InvalidSurfaceType(
+                f"Surface {self.name}, surface_type must choosen from: [ExtWall, GroundFloor, Roof] {value}"
+            )
+        self._surface_type = value
 
 
-#%%---------------------------------------------------------------------------------------------------
-#%% SurfaceInternalAdjacent class
+# %%---------------------------------------------------------------------------------------------------
+# %% SurfaceInternalAdjacent class
 
 
 class SurfaceInternalAdjacent(SurfaceInternalMass):
-
     """
     Inherited from SurfaceInternalMass
     adds the adjacentZone attribute
