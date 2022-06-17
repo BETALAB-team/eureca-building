@@ -44,7 +44,7 @@ class ThermalZone(object):
         self.name = name
         self._surface_list = surface_list
         if volume == None:
-            logging.warning(f"Thermal zone {self._idx}, the volume is not set. Initialized with 0 m3")
+            logging.warning(f"Thermal zone {self.name}, the volume is not set. Initialized with 0 m3")
             self._volume = 0.
         else:
             self._volume = volume
@@ -52,7 +52,7 @@ class ThermalZone(object):
             floors_area = [surf._area for surf in self._surface_list if
                            surf._surface_type == 'GroundFloor']
             if len(floors_area) == 0:
-                logging.warning(f"Thermal zone {self._idx}, the footprint area is not set. Initialized with 0 m2")
+                logging.warning(f"Thermal zone {self.name}, the footprint area is not set. Initialized with 0 m2")
             else:
                 self._footprint_area = np.array(floors_area).sum()
         else:
