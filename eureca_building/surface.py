@@ -404,7 +404,7 @@ class SurfaceInternalMass:
         init
     """
 
-    def __init__(self, name: str, area: float, surface_type=None, construction=None):
+    def __init__(self, name: str, area: float = 0., surface_type=None, construction=None):
         """
         input:
             area: area of the internal surface
