@@ -473,7 +473,7 @@ class SurfaceInternalMass:
             value = "IntWall"
         if value not in ["IntWall", "IntCeiling", "IntFloor"]:
             raise InvalidSurfaceType(
-                f"Surface {self.name}, surface_type must choosen from: [ExtWall, GroundFloor, Roof] {value}"
+                f"Surface {self.name}, surface_type must choosen from: [IntWall, IntCeiling, IntFloor] {value}"
             )
         self._surface_type = value
 
