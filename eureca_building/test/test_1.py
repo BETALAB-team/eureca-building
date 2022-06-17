@@ -17,7 +17,7 @@ from eureca_building.material import Material, AirGapMaterial
 from eureca_building.window import SimpleWindow
 from eureca_building.construction import Construction
 from eureca_building.construction_dataset import ConstructionDataset
-from eureca_building.surface import Surface
+from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.exceptions import (
     MaterialPropertyOutsideBoundaries,
     MaterialPropertyNotFound,
@@ -298,7 +298,6 @@ class TestSurface:
             )
 
     def test_surface_type_2(self):
-
         surf_1 = Surface(
             "Surface 1",
             vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
@@ -307,3 +306,30 @@ class TestSurface:
         )
         with pytest.raises(InvalidSurfaceType):
             surf_1.surface_type = "bds"
+
+    def test_creation_of_surfaceIM_zero(self):
+        surf = SurfaceInternalMass("Surface 1")
+        print(surf.name)
+
+    def test_creation_of_surfaceIM(self):
+        surf = SurfaceInternalMass("Surface 1", area=10.)
+        print(surf._area)
+
+    def test_creation_of_surface_fakeIM(self):
+        with pytest.raises(NegativeSurfaceArea):
+            SurfaceInternalMass("Surface 1", area=-2.)
+
+    def test_surfaceIM_type(self):
+        for s_type in ["IntWall", "IntCeiling", "IntFloor"]:
+            SurfaceInternalMass(
+                "Surface 1",
+                surface_type=s_type,
+            )
+
+    def test_surfaceIM_type_wrong(self):
+        for s_type in ["IntWall1", "IntC", "IFloor"]:
+            with pytest.raises(InvalidSurfaceType):
+                SurfaceInternalMass(
+                    "Surface 1",
+                    surface_type=s_type,
+                )
