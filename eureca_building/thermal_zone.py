@@ -28,6 +28,10 @@ from eureca_building.exceptions import (
 
 
 class ThermalZone(object):
+    """
+    Thermal zone class
+    """
+
     def __init__(self, name: str, surface_list: list, net_floor_area=None, volume=None):
         """
 
@@ -131,3 +135,57 @@ class ThermalZone(object):
             self.__air_thermal_capacity = 1e-5
         else:
             self.__air_thermal_capacity = abs(value)
+
+    def _ISO13790_params(self):
+        '''
+        Calculates the thermal zone parameters of the ISO 13790
+        it does not require input
+
+        Parameters
+            ----------
+            None
+
+        Returns
+        -------
+        None.
+        '''
+
+        self.Htr_is = 0.
+        self.Htr_w = 0.
+        self.Htr_ms = 0.
+        self.Htr_em = 0.
+        self.Cm = 0.
+        self.DenAm = 0.
+        self.Atot = 0.
+        self.Htr_op = 0.
+
+        # list all surface to extract the window and opeque area and other thermo physical prop
+
+        for surface in self._surface_list:
+            # try:
+            if surface.surface_type == 'IntFloor':
+                self.Cm += surface._opaque_area * surface.construction.k_est
+                self.DenAm += surface._opaque_area * surface.construction.k_est ** 2
+            else:
+                self.Cm += surface._opaque_area * surface.construction.k_int
+                self.DenAm += surface._opaque_area * surface.construction.k_int ** 2
+            self.Atot += surface._area
+
+            if surface.surface_type in ["ExtWall", "GroundFloor", "Roof"]:
+                self.Htr_op += surface._opaque_area * surface.construction._u_value
+                if surface._glazed_area > 0.:
+                    self.Htr_w += surface._glazed_area * surface.window._u_value
+            # except AttributeError:
+            #     raise AttributeError(
+            #         f"Thermal zone {self.name}, surface {surface.name} construction or window not specified"
+            #     )
+
+        # Final calculation
+        self.htr_ms = 9.1  # heat tranfer coeff. ISO 13790 [W/(m2 K)]
+        self.h_is = 3.45  # heat tranfer coeff. ISO 13790 [W/(m2 K)]
+
+        self.Am = self.Cm ** 2 / self.DenAm
+        self.Htr_ms = self.Am * self.htr_ms
+        self.Htr_em = 1 / (1 / self.Htr_op - 1 / self.Htr_ms)
+        self.Htr_is = self.h_is * self.Atot
+        self.UA_tot = self.Htr_op + self.Htr_w
