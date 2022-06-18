@@ -13,6 +13,7 @@ import logging
 import numpy as np
 
 from eureca_building.construction import Construction
+from eureca_building.window import SimpleWindow
 from eureca_building.exceptions import (
     Non3ComponentsVertex,
     SurfaceWrongNumberOfVertices,
@@ -55,6 +56,7 @@ class Surface:
             subdivisions_solar_calc=None,
             surface_type=None,
             construction=None,
+            window=None
     ):
         """
         Creates the surface object
@@ -80,6 +82,9 @@ class Surface:
 
         construction: Construction
             the construction object with the materials
+
+        window: Window
+            the Window object with the materials
 
         Raises
         ------
@@ -129,6 +134,8 @@ class Surface:
 
         if construction is not None:
             self.construction = construction
+        if window is not None:
+            self.window = window
 
     @property
     def _vertices(self) -> tuple:
@@ -299,6 +306,16 @@ class Surface:
         if not isinstance(value, Construction):
             raise TypeError(f"Surface {self.name}, construction must be a Construction object: {type(value)}")
         self._construction = value
+
+    @property
+    def window(self):
+        return self._window
+
+    @window.setter
+    def window(self, value):
+        if not isinstance(value, SimpleWindow):
+            raise TypeError(f"Surface {self.name}, window must be a SimpleWindow object: {type(value)}")
+        self._window = value
 
     def _set_azimuth_and_zenith(self):
 
