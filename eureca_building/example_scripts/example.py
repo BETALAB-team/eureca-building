@@ -63,7 +63,7 @@ roof_1 = Surface(
 )
 intwall_1 = SurfaceInternalMass(
     "Roof 1",
-    area=2.,
+    area=0.,
     surface_type="IntWall",
     construction=ext_wall,
 )
@@ -77,3 +77,4 @@ tz1 = ThermalZone(
     volume=100.)
 
 tz1._ISO13790_params()
+tz1._VDI6007_params()

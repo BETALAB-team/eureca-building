@@ -97,3 +97,4 @@ class TestThermalZone:
             volume=None)
 
         tz1._ISO13790_params()
+        tz1._VDI6007_params()
