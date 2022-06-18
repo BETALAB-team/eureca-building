@@ -8,12 +8,12 @@ __license__ = "MIT"
 __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
-
 units = {
     "length": "[m]",
     "conductivity": "[W/(m K)]",
     "density": "[kg/m3]",
     "specific_heat": "[J/(kg K)]",
+    "latent_heat": "[J/kg]",
     "specific_mass_flow_rate": "[kg/(s m2)]",
     "temperature": "[°C]",
     "thermal_resistance": "[(m2 K)/W]",
