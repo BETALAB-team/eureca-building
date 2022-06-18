@@ -407,6 +407,20 @@ class Surface:
             hmin = min(hmin, vert[2])
         return hmin
 
+    def get_VDI6007_surface_params(self, asim=None):
+        if asim is None:
+            if self.surface_type in ["ExtWall", "GroundFloor", "Roof"]:
+                asim = True
+            else:
+                asim = False
+        try:
+            R1, C1 = self.construction._VDI6007_surface_params(self._area, asim)
+        except AttributeError:
+            raise AttributeError(
+                f"Surface {self.name}, construction not specified"
+            )
+        return R1, C1
+
 
 # %%---------------------------------------------------------------------------------------------------
 # %% SurfaceInternalMass class
@@ -490,7 +504,7 @@ class SurfaceInternalMass:
             value = "IntWall"
         if value not in ["IntWall", "IntCeiling", "IntFloor"]:
             raise InvalidSurfaceType(
-                f"Surface {self.name}, surface_type must choosen from: [IntWall, IntCeiling, IntFloor] {value}"
+                f"SurfaceInternalMass {self.name}, surface_type must choosen from: [IntWall, IntCeiling, IntFloor] {value}"
             )
         self._surface_type = value
 
@@ -501,5 +515,15 @@ class SurfaceInternalMass:
     @construction.setter
     def construction(self, value):
         if not isinstance(value, Construction):
-            raise TypeError(f"Surface {self.name}, construction must be a Construction object: {type(value)}")
+            raise TypeError(
+                f"SurfaceInternalMass {self.name}, construction must be a Construction object: {type(value)}")
         self._construction = value
+
+    def get_VDI6007_surface_params(self, asim=False):
+        try:
+            R1, C1 = self.construction._VDI6007_surface_params(self._area, asim)
+        except AttributeError:
+            raise AttributeError(
+                f"SurfaceInternalMass {self.name}, construction not specified"
+            )
+        return R1, C1
