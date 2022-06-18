@@ -9,7 +9,8 @@ __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
 import os
-from eureca_building.surface import Surface
+from eureca_building.surface import Surface, SurfaceInternalMass
+from eureca_building.thermal_zone import ThermalZone
 from eureca_building.construction_dataset import ConstructionDataset
 
 s = Surface(name='S1', vertices=((0, 0, 0), (1., 0, 0), (0, 1., 0)))
@@ -27,6 +28,7 @@ dataset = ConstructionDataset.read_excel(path)
 ceiling = dataset.constructions_dict[13]
 floor = dataset.constructions_dict[13]
 ext_wall = dataset.constructions_dict[35]
+window = dataset.windows_dict[2]
 #########################################################
 
 # Definition of surfaces
@@ -36,10 +38,17 @@ wall_1 = Surface(
     wwr=0.4,
     surface_type="ExtWall",
     construction=ext_wall,
+    window=window,
+)
+wall_2 = Surface(
+    "Wall 2",
+    vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+    surface_type="ExtWall",
+    construction=ext_wall,
 )
 floor_1 = Surface(
     "Fllor 1",
-    vertices=((0, 0, 0), (0, 1, 0), (0, 1, 0), (1, 1, 0)),
+    vertices=((0, 0, 0), (0, 1, 0), (1, 1, 0), (0, 1, 0)),
     wwr=0.0,
     surface_type="GroundFloor",
     construction=floor,
@@ -50,6 +59,7 @@ roof_1 = Surface(
     wwr=0.4,
     surface_type="Roof",
     construction=ceiling,
+    window=window,
 )
 intwall_1 = SurfaceInternalMass(
     "Roof 1",
@@ -60,8 +70,10 @@ intwall_1 = SurfaceInternalMass(
 #########################################################
 
 # Create zone
-ThermalZone(
+tz1 = ThermalZone(
     name="Zone 1",
-    surface_list=[wall_1, floor_1, roof_1, intwall_1],
-    footprint_area=None,
-    volume=None)
+    surface_list=[wall_1, wall_2, floor_1, roof_1, intwall_1],
+    net_floor_area=None,
+    volume=100.)
+
+tz1._ISO13790_params()

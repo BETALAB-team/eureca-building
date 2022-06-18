@@ -153,8 +153,8 @@ class TestConstruction:
         # U net should be 1.041150223
         # U should be 0.884684616
 
-        assert abs(ext_wall.U - 0.884684616) < ext_wall.U / 0.001
-        assert abs(ext_wall.U_net - 1.041150223) < ext_wall.U_net / 0.001
+        assert abs(ext_wall._u_value - 0.884684616) < ext_wall._u_value / 0.001
+        assert abs(ext_wall._u_value_net - 1.041150223) < ext_wall._u_value_net / 0.001
 
     def test_window_values(self):
         window = SimpleWindow(
