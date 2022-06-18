@@ -21,12 +21,10 @@ from eureca_building.material import Material, AirGapMaterial
 from eureca_building.units import units
 
 
-
 # %% OpaqueMaterial class
 
 
 class Construction(object):
-
     """
     Defines stratigraphies class
     and calculates all the stratigraphy parameter
@@ -66,7 +64,7 @@ class Construction(object):
     rad_heat_trans_coef = 5.0
 
     def __init__(
-        self, name: str, materials_list: list, construction_type: str = "ExtWall"
+            self, name: str, materials_list: list, construction_type: str = "ExtWall"
     ):
         """
         Initializes an Construction object
@@ -89,7 +87,7 @@ class Construction(object):
         # Check input data type
         for mat in materials_list:
             if (not isinstance(mat, Material)) and (
-                not isinstance(mat, AirGapMaterial)
+                    not isinstance(mat, AirGapMaterial)
             ):
                 raise TypeError(
                     f"Construction {name}. materials_list must be a list of Materials or AirGapMaterial objects. Material {mat.name}"
@@ -117,12 +115,12 @@ class Construction(object):
             self.tot_heat_trans_coef.loc[self.construction_type]["Outside"]
         )
         self._conv_heat_trans_coef_int = (
-            self.tot_heat_trans_coef.loc[self.construction_type]["Inside"]
-            - self.rad_heat_trans_coef
+                self.tot_heat_trans_coef.loc[self.construction_type]["Inside"]
+                - self.rad_heat_trans_coef
         )
         self._conv_heat_trans_coef_ext = (
-            self.tot_heat_trans_coef.loc[self.construction_type]["Outside"]
-            - self.rad_heat_trans_coef
+                self.tot_heat_trans_coef.loc[self.construction_type]["Outside"]
+                - self.rad_heat_trans_coef
         )
 
         self.ext_absorptance = self.materials_list[0].thermal_absorptance
@@ -152,7 +150,7 @@ class Construction(object):
         # Run ISO13790params and vdi6007params to calculate further parameters
 
         self._ISO13790_params()
-        self._vdi_6007_params()
+        self._VDI6007_params()
 
     def _ISO13790_params(self):
         """
@@ -171,7 +169,7 @@ class Construction(object):
 
         T = 86400
         sigma_2 = (T / np.pi) * (
-            self.conductivities / (self.densities * self.spec_heats)
+                self.conductivities / (self.densities * self.spec_heats)
         )
         # Depth of penetration
         sigma = np.sqrt(sigma_2)
@@ -182,22 +180,21 @@ class Construction(object):
         Z = np.zeros((2, 2, self.number_of_layers), complex)
 
         for i in range(self.number_of_layers):
-
             Z[0, 0, i] = np.cosh(eps[i]) * np.cos(eps[i]) + 1j * np.sinh(
                 eps[i]
             ) * np.sin(eps[i])
             Z[1, 1, i] = Z[0, 0, i]
             Z[0, 1, i] = -(sigma[i] / (2 * self.conductivities[i])) * (
-                np.sinh(eps[i]) * np.cos(eps[i])
-                + np.cosh(eps[i]) * np.sin(eps[i])
-                + 1j
-                * (np.cosh(eps[i]) * np.sin(eps[i]) - np.sinh(eps[i]) * np.cos(eps[i]))
+                    np.sinh(eps[i]) * np.cos(eps[i])
+                    + np.cosh(eps[i]) * np.sin(eps[i])
+                    + 1j
+                    * (np.cosh(eps[i]) * np.sin(eps[i]) - np.sinh(eps[i]) * np.cos(eps[i]))
             )
             Z[1, 0, i] = -(self.conductivities[i] / sigma[i]) * (
-                np.sinh(eps[i]) * np.cos(eps[i])
-                - np.cosh(eps[i]) * np.sin(eps[i])
-                + 1j
-                * (np.sinh(eps[i]) * np.cos(eps[i]) + np.cosh(eps[i]) * np.sin(eps[i]))
+                    np.sinh(eps[i]) * np.cos(eps[i])
+                    - np.cosh(eps[i]) * np.sin(eps[i])
+                    + 1j
+                    * (np.sinh(eps[i]) * np.cos(eps[i]) + np.cosh(eps[i]) * np.sin(eps[i]))
             )
         Z_si = np.eye(2)
         # Internal surface resistance (convection and radiation, ISO 6946)
@@ -221,7 +218,7 @@ class Construction(object):
         self.k_int = (T / (2 * np.pi)) * np.abs((Z[1, 1] - 1) / Z[0, 1])
         self.k_mean = (self.k_int + self.k_est) / 2
 
-    def _vdi_6007_params(self):
+    def _VDI6007_params(self):
         """
         Calculates vdi6007 params
 
@@ -304,21 +301,21 @@ class Construction(object):
                 Im_a22 = Im_a11
 
                 Re_a12 = (
-                    r
-                    / (2 * arg)
-                    * (np.cosh(arg) * np.sin(arg) + np.sinh(arg) * np.cos(arg))
+                        r
+                        / (2 * arg)
+                        * (np.cosh(arg) * np.sin(arg) + np.sinh(arg) * np.cos(arg))
                 )
                 Im_a12 = (
-                    r
-                    / (2 * arg)
-                    * (np.cosh(arg) * np.sin(arg) - np.sinh(arg) * np.cos(arg))
+                        r
+                        / (2 * arg)
+                        * (np.cosh(arg) * np.sin(arg) - np.sinh(arg) * np.cos(arg))
                 )
 
                 Re_a21 = (
-                    -arg / r * (np.cosh(arg) * np.sin(arg) - np.sinh(arg) * np.cos(arg))
+                        -arg / r * (np.cosh(arg) * np.sin(arg) - np.sinh(arg) * np.cos(arg))
                 )
                 Im_a21 = (
-                    arg / r * (np.cosh(arg) * np.sin(arg) + np.sinh(arg) * np.cos(arg))
+                        arg / r * (np.cosh(arg) * np.sin(arg) + np.sinh(arg) * np.cos(arg))
                 )
 
                 Av[0, 0, om] = Re_a11 + 1j * Im_a11
@@ -335,7 +332,7 @@ class Construction(object):
             self._A1n_t2 = np.matmul(self._A1n_t2, Z_t2[:, :, t])
             self._A1n_t7 = np.matmul(self._A1n_t7, Z_t7[:, :, t])
 
-    def vdi_6007_surface_params(self, sup, asim):
+    def _VDI6007_surface_params(self, sup, asim):
         """
         Calculates vdi6007 params
 
@@ -374,48 +371,48 @@ class Construction(object):
         C1_t = dict()
 
         for a, omega, days in zip(
-            [self._A1n_t2, self._A1n_t7],
-            [self.omega_bt[0], self.omega_bt[1]],
-            ["2", "7"],
+                [self._A1n_t2, self._A1n_t7],
+                [self.omega_bt[0], self.omega_bt[1]],
+                ["2", "7"],
         ):
             # rcValues Given the complex matrix of the building element BT, the function
             # calculates the values R1 and C1
             R1 = (
-                1
-                / sup
-                * (
-                    (np.real(a[1, 1]) - 1) * np.real(a[0, 1])
-                    + np.imag(a[1, 1]) * np.imag(a[0, 1])
-                )
-                / ((np.real(a[1, 1]) - 1) ** 2 + (np.imag(a[1, 1])) ** 2)
+                    1
+                    / sup
+                    * (
+                            (np.real(a[1, 1]) - 1) * np.real(a[0, 1])
+                            + np.imag(a[1, 1]) * np.imag(a[0, 1])
+                    )
+                    / ((np.real(a[1, 1]) - 1) ** 2 + (np.imag(a[1, 1])) ** 2)
             )
 
             if asim == False:
                 C1 = (
-                    sup
-                    * ((np.real(a[1, 1]) - 1) ** 2 + (np.imag(a[1, 1])) ** 2)
-                    / (
-                        omega
-                        * (
-                            np.real(a[0, 1]) * np.imag(a[1, 1])
-                            - (np.real(a[1, 1]) - 1) * np.imag(a[0, 1])
+                        sup
+                        * ((np.real(a[1, 1]) - 1) ** 2 + (np.imag(a[1, 1])) ** 2)
+                        / (
+                                omega
+                                * (
+                                        np.real(a[0, 1]) * np.imag(a[1, 1])
+                                        - (np.real(a[1, 1]) - 1) * np.imag(a[0, 1])
+                                )
                         )
-                    )
                 )
             else:
                 # sarebbe C1_korr per pareti caricate asimmetricamente (pareti AW)
                 C1 = (
-                    sup
-                    * (1 / (omega * R1 * sup))
-                    * (
-                        rw * sup
-                        - np.real(a[0, 1]) * np.real(a[1, 1])
-                        - np.imag(a[1, 1]) * np.imag(a[0, 1])
-                    )
-                    / (
-                        np.real(a[1, 1]) * np.imag(a[0, 1])
-                        - np.real(a[0, 1]) * np.imag(a[1, 1])
-                    )
+                        sup
+                        * (1 / (omega * R1 * sup))
+                        * (
+                                rw * sup
+                                - np.real(a[0, 1]) * np.real(a[1, 1])
+                                - np.imag(a[1, 1]) * np.imag(a[0, 1])
+                        )
+                        / (
+                                np.real(a[1, 1]) * np.imag(a[0, 1])
+                                - np.real(a[0, 1]) * np.imag(a[1, 1])
+                        )
                 )
             R1_t[days] = R1
             C1_t[days] = C1
@@ -425,7 +422,7 @@ class Construction(object):
         # versione di jacopo
         # if (rr>0.99 and cr<0.95) or (((rr<0.99 and cr<0.95) and (abs(rr-cr)>0.3))):
         if (rr > 0.99 and cr < 0.95) or (
-            ((rr < 0.95 and cr < 0.95) and (abs(rr - cr) > 0.3))
+                ((rr < 0.95 and cr < 0.95) and (abs(rr - cr) > 0.3))
         ):
             R1 = R1_t["2"]  # T_bt = 2 days
             C1 = C1_t["2"]
