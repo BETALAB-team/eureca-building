@@ -142,11 +142,11 @@ class Construction(object):
             self.thermal_resistances[i] = mat.thermal_resistance
         self.thermal_resistance = self.net_thermal_resistance + self._R_si + self._R_se
 
-        self.U_net = 1 / self.net_thermal_resistance
-        self.U = 1 / self.thermal_resistance
+        self._u_value_net = 1 / self.net_thermal_resistance
+        self._u_value = 1 / self.thermal_resistance
 
         if self.construction_type == "GroundFloor":
-            self.U = self.U * 0.7
+            self._u_value = self._u_value * 0.7
         # Run ISO13790params and vdi6007params to calculate further parameters
 
         self._ISO13790_params()
