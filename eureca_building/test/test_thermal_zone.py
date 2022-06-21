@@ -16,6 +16,7 @@ import numpy as np
 from eureca_building.material import Material, AirGapMaterial
 from eureca_building.window import SimpleWindow
 from eureca_building.construction import Construction
+from eureca_building.weather import WeatherFile
 from eureca_building.construction_dataset import ConstructionDataset
 from eureca_building.thermal_zone import ThermalZone
 from eureca_building.surface import Surface, SurfaceInternalMass
@@ -30,6 +31,22 @@ from eureca_building.exceptions import (
     NonPlanarSurface,
     NegativeSurfaceArea,
 )
+
+
+class TestWeatherFile:
+    """
+    This is a test class for the pytest module.
+    It tests WeatherFile class and its property
+    """
+
+    def test_weather_file(self):
+        path = os.path.join(
+            "eureca_building",
+            "example_scripts",
+            "ITA_Venezia-Tessera.161050_IGDG.epw",
+        )
+        WeatherFile(path, time_steps=4)
+        WeatherFile(path, azimuth_subdivisions=6, height_subdivisions=2)
 
 
 class TestThermalZone:
