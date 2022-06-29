@@ -65,32 +65,34 @@ class WrongMaterialType(Exception):
     pass
 
 
-#%% Surfaces exeptions
+# %% Surfaces exeptions
 class Non3ComponentsVertex(Exception):
-
     pass
 
 
 class SurfaceWrongNumberOfVertices(Exception):
-
     pass
 
 
 class WindowToWallRatioOutsideBoundaries(Exception):
-
     pass
 
 
 class InvalidSurfaceType(Exception):
-
     pass
 
 
 class NonPlanarSurface(Exception):
-
     pass
 
 
 class NegativeSurfaceArea(Exception):
+    pass
 
+
+class InvalidScheduleType(Exception):
+    pass
+
+
+class ScheduleOutsideBoundaryCondition(Exception):
     pass
