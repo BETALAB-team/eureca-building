@@ -17,6 +17,7 @@ from eureca_building.schedule_properties import schedule_types
 from eureca_building.exceptions import (
     InvalidScheduleType,
     ScheduleOutsideBoundaryCondition,
+    InvalidScheduleDimension,
 )
 
 
@@ -41,7 +42,7 @@ class Schedule:
             name: str
                 name
             type: str
-                type of the {schedule_types.keys()}
+                type of the {schedule_types["unit_type"]}
             schedule: np.array
                 the schedule array, length equal to 8760 time the number of time steps per hour
             upper_limit: float/int (default None)
@@ -63,9 +64,9 @@ class Schedule:
     def type(self, value):
         if not isinstance(value, str):
             raise TypeError(f"Schedule {self.name}, type is not a str: {value}")
-        if value not in schedule_types.keys():
+        if value not in schedule_types["unit_type"]:
             raise InvalidScheduleType(
-                f"Schedule {self.name}, type not in: {schedule_types.keys()}\n{value}"
+                f"Schedule {self.name}, type not in: {schedule_types['unit_type']}\n{value}"
             )
         self._type = value
 
@@ -78,7 +79,9 @@ class Schedule:
         if value is not None:
             if not isinstance(value, float) and not isinstance(value, int):
                 raise TypeError(f"Schedule {self.name}, lower limit is not a number: {value}")
-        self.__lower_limit = value
+            self.__lower_limit = value
+        else:
+            self.__lower_limit = -1e20
 
     @property
     def _upper_limit(self):
@@ -89,7 +92,9 @@ class Schedule:
         if value is not None:
             if not isinstance(value, float) and not isinstance(value, int):
                 raise TypeError(f"Schedule {self.name}, upper limit is not a number: {value}")
-        self.__upper_limit = value
+            self.__upper_limit = value
+        else:
+            self.__upper_limit = 1e20
 
     @property
     def schedule(self):
@@ -101,6 +106,8 @@ class Schedule:
             value = np.array(_value, dtype=float)
         except ValueError:
             raise ValueError(f"Schedule {self.name}, non-numeric values in the schedule")
+        if value.ndim > 1:
+            raise InvalidScheduleDimension(f"Schedule {self.name}, schedule dimension higher than 1: {value.ndim}")
         if np.any(np.greater(value, self._upper_limit)):
             raise ScheduleOutsideBoundaryCondition(
                 f"Schedule {self.name}, there is a value above the upper limit: upper limit {self._upper_limit}"
@@ -112,18 +119,29 @@ class Schedule:
 
         self._schedule = value
 
-
-class InternalLoad(Schedule):
-    """
-    Class schedule with some generic methods for all schedule
-    (in particular how they are created)
-    """
-
-    def __init__(
-            self,
+    @classmethod
+    def from_daily_schedule(
+            cls,
             name: str,
             type: str,
-            schedule: np.array,
+            schedule_week_day: np.array,
+            schedule_saturday: np.array,
+            schedule_sunday: np.array,
+            schedule_holiday: np.array,
             lower_limit=None,
             upper_limit=None,
     ):
+        # TODO: create the method
+        pass
+
+    @classmethod
+    def from_constant_value(
+            cls,
+            name: str,
+            type: str,
+            schedule_week_day: float,
+            lower_limit=None,
+            upper_limit=None,
+    ):
+        # TODO: create the method
+        pass
