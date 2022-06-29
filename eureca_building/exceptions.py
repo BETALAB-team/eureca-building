@@ -96,3 +96,7 @@ class InvalidScheduleType(Exception):
 
 class ScheduleOutsideBoundaryCondition(Exception):
     pass
+
+
+class InvalidScheduleDimension(Exception):
+    pass
