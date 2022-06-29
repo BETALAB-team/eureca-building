@@ -46,6 +46,13 @@ class TestWeatherFile:
             "ITA_Venezia-Tessera.161050_IGDG.epw",
         )
         WeatherFile(path, time_steps=4)
+
+    def test_weather_file_2(self):
+        path = os.path.join(
+            "eureca_building",
+            "example_scripts",
+            "ITA_Venezia-Tessera.161050_IGDG.epw",
+        )
         WeatherFile(path, azimuth_subdivisions=6, height_subdivisions=2)
 
 

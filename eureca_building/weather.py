@@ -201,7 +201,10 @@ def _TskyCalc(T_ext, T_dp, P_, n_opaque, time_steps):
         Tsky = np.append(Tsky, T_sky)  # Annual Tsky created day by day
 
     # Average temperature difference between External air temperature and Apparent sky temperature
-    dT_er = np.mean(T_ext - Tsky[:-time_steps + 1])
+    if time_steps > 1:
+        dT_er = np.mean(T_ext - Tsky[:-time_steps + 1])
+    else:
+        dT_er = np.mean(T_ext - Tsky)
 
     return dT_er
 
