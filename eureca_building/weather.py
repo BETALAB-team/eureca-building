@@ -64,7 +64,7 @@ class WeatherFile():
             epw = pvlib.iotools.read_epw(epw, coerce_year=year)  # Reading the epw via pvlib
         except FileNotFoundError:
             raise FileNotFoundError \
-                (f"ERROR Weather epw file not found in the Input folder: epw name {epw_name}, input folder {input_path}")
+                (f"ERROR Weather epw file not found in the Input folder.")
 
         # Check some integer inputs
         if not isinstance(time_steps, int):
