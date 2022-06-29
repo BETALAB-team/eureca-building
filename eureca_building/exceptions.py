@@ -100,3 +100,15 @@ class ScheduleOutsideBoundaryCondition(Exception):
 
 class InvalidScheduleDimension(Exception):
     pass
+
+
+class ConvectiveRadiantFractionError(Exception):
+    pass
+
+
+class InvalidHeatGainUnit(Exception):
+    pass
+
+
+class InvalidHeatGainSchedule(Exception):
+    pass
