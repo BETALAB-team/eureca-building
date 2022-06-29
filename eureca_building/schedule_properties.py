@@ -18,32 +18,32 @@ schedule_types = {
     ]
 }
 
-# schedule_types = {
-#     "internal_load": {
-#         "people": {
-#             "unit": ["W", "W/m2", "px", "px/m2"],
-#             "fraction_latent": [0., 1.],
-#             "fraction_radiant": [0., 1.],
-#             "fraction_sensible": [0., 1.],
-#             "MET": ["W/px"],
-#         },
-#         "light": {
-#             "unit": ["W", "W/m2", ],
-#             "fraction_to_zone": [0., 1.],
-#             "fraction_radiant": [0., 1.],
-#             "fraction_sensible": [0., 1.],
-#         },
-#         "electric": {
-#             "unit": ["W", "W/m2", ],
-#             "fraction_to_zone": [0., 1.],
-#             "fraction_radiant": [0., 1.],
-#             "fraction_sensible": [0., 1.],
-#         },
-#         "vapour": {
-#             "unit": ["W", "W/m2", "g", "g/m2"],
-#             "fraction_to_zone": [0., 1.],
-#         },
-#
+internal_loads_prop = {
+    "people": {
+        "unit": ["W", "W/m2", "px", "px/m2", ],
+        "fraction_latent": [0., 1.],
+        "fraction_radiant": [0., 1.],
+        "fraction_convective": [0., 1.],
+        "MET": ["W/px"],
+    },
+    "light": {
+        "unit": ["W", "W/m2", ],
+        "fraction_to_zone": [0., 1.],
+        "fraction_radiant": [0., 1.],
+        "fraction_convective": [0., 1.],
+    },
+    "electric": {
+        "unit": ["W", "W/m2", ],
+        "fraction_to_zone": [0., 1.],
+        "fraction_radiant": [0., 1.],
+        "fraction_convective": [0., 1.],
+    },
+    "vapour": {
+        "unit": ["W", "W/m2", "g", "g/m2", ],
+        "fraction_to_zone": [0., 1.],
+    },
+}
+
 #     },
 #     "setpoint": {
 #         "temperature": {
