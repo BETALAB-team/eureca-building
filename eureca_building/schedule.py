@@ -30,7 +30,7 @@ class Schedule:
     def __init__(
             self,
             name: str,
-            type: str,
+            schedule_type: str,
             schedule: np.array,
             lower_limit=None,
             upper_limit=None,
@@ -41,7 +41,7 @@ class Schedule:
         Args:
             name: str
                 name
-            type: str
+            schedule_type: str
                 type of the {schedule_types["unit_type"]}
             schedule: np.array
                 the schedule array, length equal to 8760 time the number of time steps per hour
@@ -51,24 +51,24 @@ class Schedule:
                 upper limit to check schedule validity
         """
         self.name = str(name)
-        self.type = type
+        self.schedule_type = schedule_type
         self._lower_limit = lower_limit
         self._upper_limit = upper_limit
         self.schedule = schedule
 
     @property
-    def type(self):
-        return self._type
+    def schedule_type(self):
+        return self._schedule_type
 
-    @type.setter
-    def type(self, value):
+    @schedule_type.setter
+    def schedule_type(self, value):
         if not isinstance(value, str):
             raise TypeError(f"Schedule {self.name}, type is not a str: {value}")
         if value not in schedule_types["unit_type"]:
             raise InvalidScheduleType(
                 f"Schedule {self.name}, type not in: {schedule_types['unit_type']}\n{value}"
             )
-        self._type = value
+        self._schedule_type = value
 
     @property
     def _lower_limit(self):
@@ -123,7 +123,7 @@ class Schedule:
     def from_daily_schedule(
             cls,
             name: str,
-            type: str,
+            schedule_type: str,
             schedule_week_day: np.array,
             schedule_saturday: np.array,
             schedule_sunday: np.array,
@@ -138,7 +138,7 @@ class Schedule:
     def from_constant_value(
             cls,
             name: str,
-            type: str,
+            schedule_type: str,
             schedule_week_day: float,
             lower_limit=None,
             upper_limit=None,
