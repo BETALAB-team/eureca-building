@@ -112,3 +112,7 @@ class InvalidHeatGainUnit(Exception):
 
 class InvalidHeatGainSchedule(Exception):
     pass
+
+
+class AreaNotProvided(Exception):
+    pass

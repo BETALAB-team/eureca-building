@@ -14,6 +14,7 @@ import pytest
 import numpy as np
 
 from eureca_building.schedule import Schedule
+from eureca_building.internal_load import InternalLoad, People
 from eureca_building.exceptions import (
     InvalidScheduleType,
     ScheduleOutsideBoundaryCondition,
@@ -56,3 +57,33 @@ class TestSchedule:
                 upper_limit=5,
                 lower_limit=-10,
             )
+
+
+class TestInternalHeatGains:
+
+    def test_IHG(self):
+        # Standard IHG
+        sched = Schedule(
+            "Percent1",
+            "Percent",
+            np.array([0.1, .2, .3, .5]),
+            upper_limit=0.,
+            lower_limit=1.,
+        )
+
+        InternalLoad(
+            name='test_IHG',
+            nominal_value=10.,
+            schedule=sched,
+        )
+
+        People(
+            name='test_IHG',
+            unit='W/m2',
+            nominal_value=10.,
+            schedule=sched,
+            fraction_latent=0.55,
+            fraction_radiant=0.3,
+            fraction_convective=0.7,
+            metabolic_rate=110,
+        )
