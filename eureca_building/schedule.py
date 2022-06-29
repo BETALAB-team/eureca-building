@@ -82,6 +82,14 @@ class Schedule:
             self.__lower_limit = value
         else:
             self.__lower_limit = -1e20
+        if self.schedule_type == "Percent":
+            if value is not None:
+                logging.warning(
+                    f"""
+Schedule {self.name}, the schedule is a percentage schedule but a lower limit was set.
+Lower limit set to 0."""
+                )
+            self.__lower_limit = 0.
 
     @property
     def _upper_limit(self):
@@ -95,6 +103,14 @@ class Schedule:
             self.__upper_limit = value
         else:
             self.__upper_limit = 1e20
+        if self.schedule_type == "Percent":
+            if value is not None:
+                logging.warning(
+                    f"""
+Schedule {self.name}, the schedule is a percentage schedule but a upper limit was set.
+Lower limit set to 1."""
+                )
+            self.__upper_limit = 1.
 
     @property
     def schedule(self):
