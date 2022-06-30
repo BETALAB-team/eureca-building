@@ -14,7 +14,7 @@ import pytest
 import numpy as np
 
 from eureca_building.schedule import Schedule
-from eureca_building.internal_load import InternalLoad, People
+from eureca_building.internal_load import InternalLoad, People, ElectricLoad, Lights
 from eureca_building.exceptions import (
     InvalidScheduleType,
     ScheduleOutsideBoundaryCondition,
@@ -152,4 +152,130 @@ class TestInternalHeatGains:
                                                8.09676E-05,
                                                0.000134946,
                                                ])) < 1e-3
+        )
+
+    def test_people_schedules_3(self):
+        # Standard IHG
+        sched = Schedule(
+            "Percent1",
+            "Percent",
+            np.array([0.1, .2, .3, .5]),
+        )
+
+        el1 = ElectricLoad(
+            name='test_IHG',
+            unit='W',
+            nominal_value=100.,
+            schedule=sched,
+            fraction_to_zone=.9,
+            fraction_radiant=0.45,
+            fraction_convective=0.55,
+        )
+
+        conv, rad, lat = el1.get_loads()
+        assert (
+                np.linalg.norm(conv - np.array([4.95,
+                                                9.9,
+                                                14.85,
+                                                24.75,
+                                                ])) < 1e-5 and
+                np.linalg.norm(rad - np.array([4.05,
+                                               8.1,
+                                               12.15,
+                                               20.25,
+                                               ])) < 1e-5 and
+                np.linalg.norm(lat - np.array([0,
+                                               0,
+                                               0,
+                                               0,
+                                               ])) < 1e-5
+        )
+
+        el2 = ElectricLoad(
+            name='test_IHG',
+            unit='W/m2',
+            nominal_value=10.,
+            schedule=sched,
+            fraction_to_zone=.9,
+            fraction_radiant=0.45,
+            fraction_convective=0.55,
+        )
+
+        conv, rad, lat = el2.get_loads(area=2)
+        assert (
+                np.linalg.norm(conv - np.array([0.99,
+                                                1.98,
+                                                2.97,
+                                                4.95,
+                                                ])) < 1e-5 and
+                np.linalg.norm(rad - np.array([0.81,
+                                               1.62,
+                                               2.43,
+                                               4.05,
+                                               ])) < 1e-5 and
+                np.linalg.norm(lat - np.array([0,
+                                               0,
+                                               0,
+                                               0,
+                                               ])) < 1e-5
+        )
+
+        el3 = ElectricLoad(
+            name='test_IHG',
+            unit='W/px',
+            nominal_value=10.,
+            schedule=sched,
+            fraction_to_zone=.9,
+            fraction_radiant=0.45,
+            fraction_convective=0.55,
+            number_of_people=3,
+        )
+
+        conv, rad, lat = el3.get_loads()
+        assert (
+                np.linalg.norm(conv - np.array([1.485,
+                                                2.97,
+                                                4.455,
+                                                7.425,
+
+                                                ])) < 1e-5 and
+                np.linalg.norm(rad - np.array([1.215,
+                                               2.43,
+                                               3.645,
+                                               6.075,
+                                               ])) < 1e-5 and
+                np.linalg.norm(lat - np.array([0,
+                                               0,
+                                               0,
+                                               0,
+                                               ])) < 1e-5
+        )
+
+        l1 = Lights(
+            name='test_IHG',
+            unit='W/m2',
+            nominal_value=10.,
+            schedule=sched,
+            fraction_to_zone=.9,
+            fraction_radiant=0.45,
+            fraction_convective=0.55,
+        )
+
+        conv, rad, lat = l1.get_loads(area=2)
+        assert (
+                np.linalg.norm(conv - np.array([0.99,
+                                                1.98,
+                                                2.97,
+                                                4.95,
+                                                ])) < 1e-5 and
+                np.linalg.norm(rad - np.array([0.81,
+                                               1.62,
+                                               2.43,
+                                               4.05,
+                                               ])) < 1e-5 and
+                np.linalg.norm(lat - np.array([0,
+                                               0,
+                                               0,
+                                               0,
+                                               ])) < 1e-5
         )
