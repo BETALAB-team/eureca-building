@@ -35,7 +35,7 @@ internal_loads_prop = {
         "tags": [],
     },
     "electric": {
-        "unit": ["W", "W/m2", ],
+        "unit": ["W", "W/m2", "W/px"],
         "fraction_to_zone": [0., 1.],
         "fraction_radiant": [0., 1.],
         "fraction_convective": [0., 1.],
