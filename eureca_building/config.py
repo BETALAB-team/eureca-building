@@ -14,13 +14,13 @@ from datetime import datetime
 
 # %% ---------------------------------------------------------------------------------------------------
 class Config(dict):
-    '''
+    """
     This class is a container for config settings.
 
     Methods:
         to_json
         from_json
-    '''
+    """
 
     @classmethod
     def from_json(cls, file_path):
