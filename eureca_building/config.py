@@ -9,7 +9,7 @@ __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # %% ---------------------------------------------------------------------------------------------------
@@ -22,6 +22,20 @@ class Config(dict):
         from_json
     """
 
+    @property
+    def ts_per_hour(self) -> int:
+        return self._ts_per_hour
+
+    @ts_per_hour.setter
+    def ts_per_hour(self, value: int):
+        try:
+            value = int(value)
+        except ValueError:
+            raise TypeError(f"Config, time_step_per_hour is not an int: {value}")
+        if 60 % value != 0:
+            raise ValueError(f"Config, time_step_per_hour must be a divider of 60")
+        self._ts_per_hour = value
+
     @classmethod
     def from_json(cls, file_path):
         try:
@@ -33,6 +47,9 @@ class Config(dict):
         config_dict.ts_per_hour = int(config_dict['simulation settings']['time steps per hour'])
         config_dict.start_date = datetime.strptime(config_dict['simulation settings']['start date'], "%m-%d %H:%M")
         config_dict.final_date = datetime.strptime(config_dict['simulation settings']['final date'], "%m-%d %H:%M")
+        config_dict.time_step = int(60 / config_dict.ts_per_hour)
+        config_dict.number_of_time_steps = int((config_dict.final_date - config_dict.start_date) / timedelta(
+            minutes=config_dict.time_step)) + 1
         # Radiation
         config_dict.azimuth_subdivisions = int(config_dict['solar radiation settings']["azimuth subdivisions"])
         config_dict.height_subdivisions = int(config_dict['solar radiation settings']["height subdivisions"])
