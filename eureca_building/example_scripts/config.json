@@ -1,8 +1,12 @@
 {
-  "Model": "example_model",
-  "Simulation settings": {
-    "Time step": 4,
-    "Starting date": "01-24 00:00",
-    "Final date": "08-30 07:00"
+  "model": "example_model",
+  "simulation settings": {
+    "time steps per hour": 4,
+    "start date": "01-24 00:00",
+    "final date": "08-30 07:00"
+  },
+  "solar radiation settings": {
+    "height subdivisions": 4,
+    "azimuth subdivisions": 8
   }
 }
