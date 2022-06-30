@@ -61,7 +61,7 @@ class TestSchedule:
 
 class TestInternalHeatGains:
 
-    def test_IHG(self):
+    def test_IHG_creation(self):
         # Standard IHG
         sched = Schedule(
             "Percent1",
@@ -86,4 +86,70 @@ class TestInternalHeatGains:
             fraction_radiant=0.3,
             fraction_convective=0.7,
             metabolic_rate=110,
+        )
+
+    def test_people_schedules(self):
+        # Standard IHG
+        sched = Schedule(
+            "Percent1",
+            "Percent",
+            np.array([0.1, .2, .3, .5]),
+        )
+
+        people1 = People(
+            name='test_IHG',
+            unit='W/m2',
+            nominal_value=10.,
+            schedule=sched,
+            fraction_latent=0.45,
+            fraction_radiant=0.3,
+            fraction_convective=0.7,
+        )
+
+        conv, rad, lat = people1.get_loads(area=2.)
+        assert (
+                np.linalg.norm(conv - np.array([0.385, 0.77, 1.155, 1.925]) * 2) < 1e-5 and
+                np.linalg.norm(rad - np.array([0.165, 0.33, 0.495, 0.825]) * 2) < 1e-5 and
+                np.linalg.norm(lat - np.array([1.79928029e-07,
+                                               3.59856058e-07,
+                                               5.39784086e-07,
+                                               8.99640144e-07]) * 2) < 1e-5
+        )
+
+    def test_people_schedules_2(self):
+        # Standard IHG
+        sched = Schedule(
+            "Percent1",
+            "Percent",
+            np.array([0.1, .2, .3, .5]),
+        )
+
+        people1 = People(
+            name='test_IHG',
+            unit='px/m2',
+            nominal_value=5.,
+            schedule=sched,
+            fraction_latent=0.45,
+            fraction_radiant=0.3,
+            fraction_convective=0.7,
+            metabolic_rate=150,
+        )
+
+        conv, rad, lat = people1.get_loads(area=2.)
+        assert (
+                np.linalg.norm(conv - np.array([57.75,
+                                                115.5,
+                                                173.25,
+                                                288.75,
+                                                ])) < 1e-5 and
+                np.linalg.norm(rad - np.array([24.75,
+                                               49.5,
+                                               74.25,
+                                               123.75,
+                                               ])) < 1e-5 and
+                np.linalg.norm(lat - np.array([2.69892E-05,
+                                               5.39784E-05,
+                                               8.09676E-05,
+                                               0.000134946,
+                                               ])) < 1e-3
         )

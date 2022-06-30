@@ -9,9 +9,14 @@ __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
 import os
+
+import numpy as np
+
 from eureca_building.weather import WeatherFile
 from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.thermal_zone import ThermalZone
+from eureca_building.internal_load import People
+from eureca_building.schedule import Schedule
 from eureca_building.construction_dataset import ConstructionDataset
 
 #########################################################
@@ -79,3 +84,22 @@ tz1 = ThermalZone(
 
 tz1._ISO13790_params()
 tz1._VDI6007_params()
+
+#########################################################
+# Loads
+sched = Schedule(
+    "PeopleOccupancy1",
+    "Percent",
+    np.array([0.1, .2, .3, .5]),
+)
+
+people1 = People(
+    name='test_IHG',
+    unit='px/m2',
+    nominal_value=5.,
+    schedule=sched,
+    fraction_latent=0.45,
+    fraction_radiant=0.3,
+    fraction_convective=0.7,
+    metabolic_rate=150,
+)
