@@ -25,22 +25,26 @@ internal_loads_prop = {
         "fraction_radiant": [0., 1.],
         "fraction_convective": [0., 1.],
         "MET": ["W/px"],
+        "tags": [],
     },
     "light": {
         "unit": ["W", "W/m2", ],
         "fraction_to_zone": [0., 1.],
         "fraction_radiant": [0., 1.],
         "fraction_convective": [0., 1.],
+        "tags": [],
     },
     "electric": {
         "unit": ["W", "W/m2", ],
         "fraction_to_zone": [0., 1.],
         "fraction_radiant": [0., 1.],
         "fraction_convective": [0., 1.],
+        "tags": [],
     },
     "vapour": {
         "unit": ["W", "W/m2", "g", "g/m2", ],
         "fraction_to_zone": [0., 1.],
+        "tags": [],
     },
 }
 
