@@ -14,6 +14,7 @@ import numpy as np
 
 from eureca_building.schedule_properties import internal_loads_prop
 from eureca_building.schedule import Schedule
+from eureca_building.fluids_properties import vapour_properties
 
 from eureca_building.exceptions import (
     ConvectiveRadiantFractionError,
@@ -123,7 +124,7 @@ class InternalLoad:
         except AttributeError:
             # This is just to avoid the check if self.fraction_radiant doesn't exist
             pass
-        self._fraction_sensible = value
+        self._fraction_convective = value
 
     def get_convective_load(self, *args, **kwarg) -> np.array:
         raise NotImplementedError(
@@ -192,52 +193,69 @@ class People(InternalLoad):
         self.fraction_convective = fraction_convective
         self.metabolic_rate = metabolic_rate
 
-        @property
-        def unit(self):
-            return self._unit
+    @property
+    def unit(self):
+        return self._unit
 
-        @unit.setter
-        def unit(self, value):
-            if not isinstance(value, str):
-                raise TypeError(f"People load {self.name}, type is not a str: {value}")
-            if value not in internal_loads_prop["people"]["unit"]:
-                raise InvalidHeatGainUnit(
-                    f"People load {self.name}, unit not in: {internal_loads_prop['people']['unit']}\n{value}"
-                )
-            if unit in ["W/m2", "px/m2", ]:
-                self._calculation_method = "floor_area"
-            elif unit in ["W", "px", ]:
-                self._calculation_method = "absolute"
-            self._unit = value
+    @unit.setter
+    def unit(self, value):
+        if not isinstance(value, str):
+            raise TypeError(f"People load {self.name}, type is not a str: {value}")
+        if value not in internal_loads_prop["people"]["unit"]:
+            raise InvalidHeatGainUnit(
+                f"People load {self.name}, unit not in: {internal_loads_prop['people']['unit']}\n{value}"
+            )
+        if value in ["W/m2", "px/m2", ]:
+            self._calculation_method = "floor_area"
+        elif value in ["W", "px", ]:
+            self._calculation_method = "absolute"
+        self._unit = value
 
-        @property
-        def metabolic_rate(self):
-            return self._metabolic_rate
+    @property
+    def metabolic_rate(self):
+        return self._metabolic_rate
 
-        @metabolic_rate.setter
-        def metabolic_rate(self, value):
-            try:
-                value = float(value)
-            except ValueError:
-                raise ValueError(f"People load {self.name}, metabolic_rate is not a float: {value}")
-            if value < 0.:
-                raise ValueError(
-                    f"People load {self.name}, negative metabolic rate: {value}"
-                )
-            if value > 250.:
-                logging.warning(
-                    f"People load {self.name}, metabolic rate over 250 W/px: {value}"
-                )
-            self._metabolic_rate = value
+    @metabolic_rate.setter
+    def metabolic_rate(self, value):
+        try:
+            value = float(value)
+        except ValueError:
+            raise ValueError(f"People load {self.name}, metabolic_rate is not a float: {value}")
+        if value < 0.:
+            raise ValueError(
+                f"People load {self.name}, negative metabolic rate: {value}"
+            )
+        if value > 250.:
+            logging.warning(
+                f"People load {self.name}, metabolic rate over 250 W/px: {value}"
+            )
+        self._metabolic_rate = value
 
-    def _convert_px_in_w(self):
+    def _get_absolute_value_nominal(self, area=None):
         """
-        Convert a px in W or px/m2 in W/m2
+        Returns occupancy nominal value in W
+        Args:
+            area: None
+                [m2]: must be provide if the load is specific
+
         Returns:
-            nominal_value: float
-                nominal value W or W/m2
+            float
         """
-        return self.nominal_value * self.metabolic_rate
+        if self._calculation_method == "floor_area":
+            if area == None:
+                raise AreaNotProvided(
+                    f"Internal Heat Gain {self.name}, specific load but area not provided."
+                )
+            area = float(area)
+        else:
+            area = 1.
+        if self.unit in ["px", "px/m2", ]:
+            px_w_converter = self.metabolic_rate
+        else:
+            px_w_converter = 1.
+
+        # This value is in W
+        self.nominal_value_absolute = area * px_w_converter * self.nominal_value
 
     def get_convective_load(self, area=None):
         """
@@ -248,17 +266,68 @@ class People(InternalLoad):
 
         Returns:
             np.array:
-                the schedule
+                the schedule [W]
 
         """
-        if self._calculation_method == "floor_area":
-            if area == None:
-                raise AreaNotProvided(
-                    f"Internal Heat Gain {self.name}, specific load but area not provided."
-                )
+        try:
+            self.nominal_value_absolute
+        except AttributeError:
+            self._get_absolute_value_nominal(area=area)
+        convective_fraction = (1 - self.fraction_latent) * self.fraction_convective
+        return convective_fraction * self.nominal_value_absolute * self.schedule.schedule
 
-    def get_radiant_load(self, *args, **kwarg):
-        pass
+    def get_radiant_load(self, area=None):
+        """
+        Return the radiant load np.array
+        If the calculation method is specific (W/m2 or px/m2) the area must be passed
+        Args:
+            area: None
 
-    def get_latent_load(self, *args, **kwarg):
-        pass
+        Returns:
+            np.array:
+                the schedule [W]
+
+        """
+        try:
+            self.nominal_value_absolute
+        except AttributeError:
+            self._get_absolute_value_nominal(area=area)
+        radiant_fraction = (1 - self.fraction_latent) * self.fraction_radiant
+        return radiant_fraction * self.nominal_value_absolute * self.schedule.schedule
+
+    def get_latent_load(self, area=None):
+        """
+        Return the latent load np.array
+        If the calculation method is specific (W/m2 or px/m2) the area must be passed
+        Args:
+            area: None
+
+        Returns:
+            np.array:
+                the schedule [kg_vap/s]
+
+        """
+        try:
+            self.nominal_value_absolute
+        except AttributeError:
+            self._get_absolute_value_nominal(area=area)
+        vapour_nominal_value_kg_s = self.fraction_latent * self.nominal_value_absolute / vapour_properties[
+            'latent_heat']
+        return self.schedule.schedule * vapour_nominal_value_kg_s
+
+    def get_loads(self, area=None):
+        """
+        Return the convective, radiant, latent load np.array
+        If the calculation method is specific (W/m2 or px/m2) the area must be passed
+        Args:
+            area: None
+
+        Returns:
+            [np.array, np.array, np.array]:
+                the schedules: convective [W], radiant [W], vapour [kg_vap/s]
+
+        """
+        conv = self.get_convective_load(area=area)
+        rad = self.get_radiant_load(area=area)
+        lat = self.get_latent_load(area=area)
+        return conv, rad, lat
