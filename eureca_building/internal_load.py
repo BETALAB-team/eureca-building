@@ -355,6 +355,7 @@ class People(InternalLoad):
 
 
 class ElectricLoad(InternalLoad):
+    # TODO: Add a function to calculate the load considering the hourly occupancy (only if unit W/px)
     def __init__(
             self,
             name: str,
