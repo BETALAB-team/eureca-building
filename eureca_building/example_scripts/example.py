@@ -11,11 +11,12 @@ __maintainer__ = "Enrico Prataviera"
 import os
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from eureca_building.weather import WeatherFile
 from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.thermal_zone import ThermalZone
-from eureca_building.internal_load import People
+from eureca_building.internal_load import People, Lights, ElectricLoad
 from eureca_building.schedule import Schedule
 from eureca_building.construction_dataset import ConstructionDataset
 
@@ -87,19 +88,40 @@ tz1._VDI6007_params()
 
 #########################################################
 # Loads
-sched = Schedule(
+
+# A schedule
+people_sched = Schedule(
     "PeopleOccupancy1",
     "Percent",
-    np.array([0.1, .2, .3, .5]),
+    np.array(([0.1] * 7 + [0.6] * 2 + [0.4] * 5 + [0.6] * 10) * 365),
 )
 
-people1 = People(
-    name='test_IHG',
+# Loads
+people = People(
+    name='occupancy_tz',
     unit='px/m2',
-    nominal_value=5.,
-    schedule=sched,
+    nominal_value=0.2,
+    schedule=people_sched,
     fraction_latent=0.45,
     fraction_radiant=0.3,
     fraction_convective=0.7,
     metabolic_rate=150,
+)
+
+lights = Lights(
+    name='lights_tz',
+    unit='W/m2',
+    nominal_value=11.,
+    schedule=people_sched,
+    fraction_radiant=0.7,
+    fraction_convective=0.3,
+)
+
+pc = ElectricLoad(
+    name='pc_tz',
+    unit='W',
+    nominal_value=300.,
+    schedule=people_sched,
+    fraction_radiant=0.2,
+    fraction_convective=0.8,
 )
