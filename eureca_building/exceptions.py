@@ -116,3 +116,7 @@ class InvalidHeatGainSchedule(Exception):
 
 class AreaNotProvided(Exception):
     pass
+
+
+class PeopleNotProvided(Exception):
+    pass
