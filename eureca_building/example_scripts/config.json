@@ -1,0 +1,8 @@
+{
+  "Model": "example_model",
+  "Simulation settings": {
+    "Time step": 4,
+    "Starting date": "01-24 00:00",
+    "Final date": "08-30 07:00"
+  }
+}
