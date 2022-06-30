@@ -125,3 +125,6 @@ pc = ElectricLoad(
     fraction_radiant=0.2,
     fraction_convective=0.8,
 )
+
+tz1.add_internal_load(people)
+tz1.add_internal_load(lights, pc)

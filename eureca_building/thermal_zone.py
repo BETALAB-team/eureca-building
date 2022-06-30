@@ -15,6 +15,7 @@ import numpy as np
 from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.fluids_properties import air_properties
 from eureca_building._VDI6007_auxiliary_functions import impedence_parallel, tri2star
+from eureca_building.internal_load import Lights, ElectricLoad, People, InternalLoad
 from eureca_building.exceptions import (
     Non3ComponentsVertex,
     SurfaceWrongNumberOfVertices,
@@ -63,6 +64,8 @@ class ThermalZone(object):
                 self._net_floor_area = np.array(floors_area).sum()
         else:
             self._net_floor_area = net_floor_area
+
+        self.internal_loads_list = []
 
     @property
     def _surface_list(self) -> float:
@@ -277,7 +280,7 @@ class ThermalZone(object):
 
                 AreaIW = np.append(AreaIW, surface._area)
             else:
-                raise TypeError('Surface {surface.name}: surface type not found: {surface.surface_type}.')
+                raise TypeError(f'Surface {surface.name}: surface type not found: {surface.surface_type}.')
 
         # Doing the parallel of the impedances
 
@@ -311,3 +314,20 @@ class ThermalZone(object):
         self.UA_tot = sum(HAW_v) + sum(HAF_v)
         self.Htr_op = sum(HAW_v)
         self.Htr_w = sum(HAF_v)
+
+    def add_internal_load(self, *internal_load):
+        """
+        Function to associate a load to the thermal zone
+
+        Args:
+            internal_load: InternalLoad
+
+        Returns:
+            None
+        """
+        for int_load in internal_load:
+            if not isinstance(int_load, InternalLoad):
+                raise TypeError(
+                    f"ThermalZone {self.name}, add_internal_load() method: internal_load not of InternalLoad type: {type(int_load)}"
+                )
+            self.internal_loads_list.append(int_load)
