@@ -13,6 +13,7 @@ import configparser
 import logging
 from datetime import datetime, timedelta
 
+# TODO: fix default config file path
 DEFAULT_CONFIG_FILE = 'default_config.ini'
 
 
@@ -28,7 +29,8 @@ def load_config(file: str):
         message = "Config file not found: Trying to load default config"
         print(message)
         logging.warning(message)
-        CONFIG = DEFAULT_CONFIG_FILE
+        CONFIG = Config()
+        CONFIG.read(DEFAULT_CONFIG_FILE)
 
     globals().update(CONFIG)
     return CONFIG
