@@ -11,8 +11,10 @@ __maintainer__ = "Enrico Prataviera"
 import logging
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from eureca_building.schedule_properties import schedule_types
+from eureca_building.config import CONFIG
 from eureca_building.exceptions import (
     InvalidScheduleType,
     ScheduleOutsideBoundaryCondition,
@@ -132,13 +134,21 @@ Lower limit set to 1."""
             raise ScheduleOutsideBoundaryCondition(
                 f"Schedule {self.name}, there is a value below the lower limit: lower limit {self._lower_limit}"
             )
-        if False:
-            # TODO: Find a way to check schedule length with a global config
+        if len(value) != CONFIG.number_of_time_steps_year:
             raise ScheduleLengthNotConsistent(
-                f"Schedule {self.name}, the length of the schedule is not consistent with {self._lower_limit}"
+                f"""
+Schedule {self.name}: the length of the schedule is not consistent 
+with the number of time steps provided. 
+Schedule length : {len(value)}
+Number of time steps: {CONFIG.number_of_time_steps_year}
+                """
             )
 
         self._schedule = value
+
+    def plot(self):
+        plt.plot(self.schedule)
+        plt.title(f'Schedule: {self.name}')
 
     @classmethod
     def from_daily_schedule(

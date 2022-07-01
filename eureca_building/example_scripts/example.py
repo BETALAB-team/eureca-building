@@ -13,20 +13,23 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+#########################################################
+# Config loading
+# Loads a global config object
 from eureca_building.config import load_config
+
+config_path = os.path.join('..', 'example_scripts', 'config.json')
+load_config(config_path)
+from eureca_building.config import CONFIG
+
+#########################################################
+
 from eureca_building.weather import WeatherFile
 from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.thermal_zone import ThermalZone
 from eureca_building.internal_load import People, Lights, ElectricLoad
 from eureca_building.schedule import Schedule
 from eureca_building.construction_dataset import ConstructionDataset
-
-#########################################################
-# Config loading
-# Loads a global config object
-config_path = os.path.join('..', 'example_scripts', 'config.json')
-load_config(config_path)
-from eureca_building.config import CONFIG
 
 #########################################################
 # Epw loading
@@ -104,7 +107,7 @@ tz1._VDI6007_params()
 people_sched = Schedule(
     "PeopleOccupancy1",
     "Percent",
-    np.array(([0.1] * 7 + [0.6] * 2 + [0.4] * 5 + [0.6] * 10) * 365),
+    np.array(([0.1] * 7 * 2 + [0.6] * 2 * 2 + [0.4] * 5 * 2 + [0.6] * 10 * 2) * 365),
 )
 
 # Loads
