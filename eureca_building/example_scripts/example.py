@@ -113,8 +113,8 @@ people_sched = Schedule(
 # Loads
 people = People(
     name='occupancy_tz',
-    unit='px/m2',
-    nominal_value=0.2,
+    unit='px',
+    nominal_value=1.2,
     schedule=people_sched,
     fraction_latent=0.45,
     fraction_radiant=0.3,
@@ -142,3 +142,5 @@ pc = ElectricLoad(
 
 tz1.add_internal_load(people)
 tz1.add_internal_load(lights, pc)
+
+tz_loads = tz1.extract_convective_radiative_latent_load()

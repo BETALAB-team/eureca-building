@@ -12,6 +12,7 @@ import logging
 
 import numpy as np
 
+from eureca_building.config import CONFIG
 from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.fluids_properties import air_properties
 from eureca_building._VDI6007_auxiliary_functions import impedence_parallel, tri2star
@@ -60,6 +61,7 @@ class ThermalZone(object):
                            surf._surface_type == 'GroundFloor']
             if len(floors_area) == 0:
                 logging.warning(f"Thermal zone {self.name}, the footprint area is not set. Initialized with 0 m2")
+                self._net_floor_area = 0.
             else:
                 self._net_floor_area = np.array(floors_area).sum()
         else:
@@ -93,13 +95,13 @@ class ThermalZone(object):
         except ValueError:
             raise TypeError(f"Thermal zone {self.name}, footprint area is not an float: {value}")
         if value < 0.0:
-            raise logging.error(
+            logging.error(
                 f"Thermal zone {self.name}, negative footprint area: {value}. Simulation will continue with absolute value"
             )
         if float(abs(value)) < 1e-5:
-            self.__area = 1e-5
+            self.__net_floor_area = 1e-5
         else:
-            self.__area = abs(value)
+            self.__net_floor_area = abs(value)
 
     @property
     def _volume(self) -> float:
@@ -331,3 +333,137 @@ class ThermalZone(object):
                     f"ThermalZone {self.name}, add_internal_load() method: internal_load not of InternalLoad type: {type(int_load)}"
                 )
             self.internal_loads_list.append(int_load)
+
+    def extract_convective_radiative_latent_load(self):
+        """
+        From the internal loads calculates 3 arrays (len equal to 8769 * number of time steps per hour):
+        {
+        convective [W] : np.array
+        radiative [W] : np.array
+        latent [kg_vap/s] : np.array
+        }
+
+        Returns:
+            dict
+        """
+        convective = np.zeros(CONFIG.number_of_time_steps_year)
+        radiant = np.zeros(CONFIG.number_of_time_steps_year)
+        latent = np.zeros(CONFIG.number_of_time_steps_year)
+        for load in self.internal_loads_list:
+            load_conv, load_rad, load_lat = load.get_loads(area=self._net_floor_area)
+            convective += load_conv
+            radiant += load_rad
+            latent += load_lat
+        return {'convective [W]': convective,
+                'radiant [W]': radiant,
+                'latent [kg_vap/s]': latent}
+
+    # def calculate_zone_loads_ISO13790(self, weather, h_r):
+    #     '''
+    #     Calculates the heat gains on the three nodes of the ISO 13790 network
+    #     Vectorial calculation
+    #
+    #     Parameters
+    #         ----------
+    #         weather : RC_classes.WeatherData.weather
+    #             weather obj
+    #         h_r : float
+    #             external radiative heat transfer coefficient W/(m2 K)
+    #
+    #     Returns
+    #     -------
+    #     None.
+    #     '''
+    #
+    #     # Check input data type
+    #
+    #     if not isinstance(weather, Weather):
+    #         raise TypeError(f'ERROR JsonCity class, weather is not a RC_classes.WeatherData.Weather: weather {weather}')
+    #     if not isinstance(weather.dT_er, float):
+    #         try:
+    #             weather.dT_er = float(weather.dT_er)
+    #         except ValueError:
+    #             raise TypeError(
+    #                 f'ERROR thermal zone calculate_zone_loads_ISO13790, bd {self.bd_name}, dT_er input is not an float: dT_er {weather.dT_er}')
+    #     if not isinstance(h_r, float):
+    #         try:
+    #             h_r = float(h_r)
+    #         except ValueError:
+    #             raise TypeError(
+    #                 f'ERROR thermal zone calculate_zone_loads_ISO13790, bd {self.bd_name}, h_r input is not an float: h_r {h_r}')
+    #
+    #     # Check input data quality
+    #
+    #     if h_r < 0.:
+    #         wrn(f"WARNING  Thermal zone calculate_zone_loads_ISO13790, bd {self.bd_name}, the h_r is negative: h_r {h_r}.")
+    #
+    #     if not 0. <= weather.dT_er < 30.:
+    #         wrn(f"WARNING  Thermal zone calculate_zone_loads_ISO13790, bd {self.bd_name}, the dT_er is outside limits [0,30] °C: dT_er {weather.dT_er}.")
+    #
+    #     # First calculation of internal heat gains
+    #
+    #     phi_int = (self.schedules.people + self.schedules.appliances + self.schedules.lighting) * self.zone_area
+    #     phi_sol_gl_tot = 0
+    #     phi_sol_op_tot = 0
+    #
+    #     # Solar radiation
+    #
+    #     for i in self.surfaces.values():
+    #
+    #         phi_sol_op = 0
+    #         phi_sol_gl = 0
+    #
+    #         if i.type == 'ExtWall' or i.type == 'Roof':
+    #             irradiance = weather.SolarGains[str(float(i.azimuth_round))][str(float(i.height_round))]
+    #             BRV = irradiance['direct'].to_numpy()
+    #             TRV = irradiance['global'].to_numpy()
+    #             DRV = TRV - BRV
+    #             A_ww = i.glazedArea
+    #             self.A_ew = i.opaqueArea
+    #
+    #             # Glazed surfaces
+    #             F_sh = self.Strat['Window'].F_sh
+    #             F_w = self.Strat['Window'].F_w
+    #             F_f = self.Strat['Window'].F_f
+    #             F_so = self.Strat['Window'].F_so
+    #             AOI = irradiance['AOI'].to_numpy()
+    #             shgc = interpolate.splev(AOI, self.Strat['Window'].SHGC_profile, der=0)
+    #             shgc_diffuse = interpolate.splev(70, self.Strat['Window'].SHGC_profile, der=0)
+    #             if i.OnOff_shading == 'On':
+    #                 phi_sol_gl = F_so * (BRV * F_sh * F_w * (
+    #                         1 - F_f) * shgc * A_ww * i.shading_effect) + F_so * DRV * F_sh * F_w * (
+    #                                      1 - F_f) * shgc_diffuse * A_ww
+    #             else:
+    #                 phi_sol_gl = F_so * (BRV * F_sh * F_w * (1 - F_f) * shgc * A_ww) + F_so * DRV * F_sh * F_w * (
+    #                         1 - F_f) * shgc_diffuse * A_ww
+    #
+    #         # Opaque surfaces
+    #         if i.type == 'ExtWall':
+    #             self.F_so_op = F_so
+    #             self.F_r = i.F_r
+    #             self.alpha = self.Strat['ExtWall'].alpha_est
+    #             self.sr_ew = self.Strat['ExtWall'].R_se
+    #             self.U_ew_net = self.Strat['ExtWall'].U_net
+    #             if i.OnOff_shading == 'On':
+    #                 phi_sol_op = self.F_so_op * (
+    #                         BRV * i.shading_effect + DRV) * self.alpha * self.sr_ew * self.U_ew_net * self.A_ew - self.F_r * self.sr_ew * self.U_ew_net * self.A_ew * h_r * weather.dT_er
+    #             else:
+    #                 phi_sol_op = self.F_so_op * TRV * self.alpha * self.sr_ew * self.U_ew_net * self.A_ew - self.F_r * self.sr_ew * self.U_ew_net * self.A_ew * h_r * weather.dT_er
+    #
+    #         if i.type == 'Roof':
+    #             TRH = weather.SolarGains['0.0']['0.0']['global'].to_numpy()
+    #             self.F_r = i.F_r
+    #             self.alpha = self.Strat['Roof'].alpha_est
+    #             self.sr_rf = self.Strat['Roof'].R_se
+    #             self.U_rf_net = self.Strat['Roof'].U_net
+    #             phi_sol_op = TRH * self.alpha * self.sr_rf * self.U_rf_net * self.A_ew - self.F_r * self.sr_rf * self.U_rf_net * self.A_ew * h_r * weather.dT_er
+    #
+    #         # Total solar gain
+    #         phi_sol_gl_tot += phi_sol_gl
+    #         phi_sol_op_tot += phi_sol_op
+    #     phi_sol = phi_sol_gl_tot + phi_sol_op_tot
+    #
+    #     # Distribute heat gains to temperature nodes
+    #     self.phi_ia = 0.5 * phi_int
+    #     self.phi_st = (1 - self.Am / self.Atot - self.Htr_w / (9.1 * self.Atot)) * (0.5 * phi_int + phi_sol)
+    #     self.phi_m = self.Am / self.Atot * (0.5 * phi_int + phi_sol)
