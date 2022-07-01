@@ -143,8 +143,8 @@ class WeatherFile():
         self.hourly_data["solar_position_equation_of_time"] = self._solar_position['equation_of_time'].values
 
         # Dataframe with hourly solar radiation per each direction
-        azimuth_array = np.linspace(-180, 180, self.general_data['azimuth_subdivisions'] + 1)[:-1]
-        height_array = np.linspace(90, 0, self.general_data['height_subdivisions'] + 1)[:-1]
+        azimuth_array = np.linspace(-180, 180, self.general_data['azimuth_subdivisions'] + 1, dtype=int)[:-1]
+        height_array = np.linspace(90, 0, self.general_data['height_subdivisions'] + 1, dtype=int)[:-1]
         self.hourly_data_irradiances = {}
         for az in azimuth_array:
             self.hourly_data_irradiances[az] = {}
@@ -154,6 +154,12 @@ class WeatherFile():
                 self.hourly_data_irradiances[az][h]['global'] = POA['POA'].values
                 self.hourly_data_irradiances[az][h]['direct'] = POA['POA_B'].values
                 self.hourly_data_irradiances[az][h]['AOI'] = POA['AOI'].values
+        # Horizontal
+        POA = _get_irradiance(self, 0., 0.)
+        self.hourly_data_irradiances[0][0] = {}
+        self.hourly_data_irradiances[0][0]['global'] = POA['POA'].values
+        self.hourly_data_irradiances[0][0]['direct'] = POA['POA_B'].values
+        self.hourly_data_irradiances[0][0]['AOI'] = POA['AOI'].values
 
 
 def _TskyCalc(T_ext, T_dp, P_, n_opaque, time_steps):
