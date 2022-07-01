@@ -75,6 +75,8 @@ class Config(configparser.ConfigParser):
         self.start_time_step = start_time_step
         self.final_time_step = start_time_step + self.number_of_time_steps
         self.number_of_time_steps_year = int(8760 * 60 / (self.time_step / 60))
+        if self.ts_per_hour > 1:
+            self.number_of_time_steps_year -= 1
 
         # Radiation
         self.azimuth_subdivisions = int(self['solar radiation settings']["azimuth subdivisions"])
@@ -102,6 +104,8 @@ class Config(configparser.ConfigParser):
         config_dict.start_time_step = start_time_step
         config_dict.final_time_step = start_time_step + config_dict.number_of_time_steps
         config_dict.number_of_time_steps_year = int(8760 * 60 / (config_dict.time_step / 60))
+        if config_dict.ts_per_hour > 1:
+            config_dict.number_of_time_steps_year -= 1
 
         # Radiation
         config_dict.azimuth_subdivisions = int(config_dict['solar radiation settings']["azimuth subdivisions"])
