@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 # Loads a global config object
 from eureca_building.config import load_config
 
-config_path = os.path.join('..', 'example_scripts', 'config.json')
-load_config(config_path)
+config_path = os.path.join('.', 'example_scripts', 'config.json')
+load_config()
 from eureca_building.config import CONFIG
 
 #########################################################

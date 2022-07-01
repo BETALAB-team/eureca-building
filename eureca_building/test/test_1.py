@@ -12,6 +12,14 @@ import os
 
 import pytest
 import numpy as np
+#########################################################
+# Config loading
+# Loads a global config object
+from eureca_building.config import load_config
+
+config_path = os.path.join('.', 'eureca_building', 'test', 'config.ini')
+load_config(config_path)
+from eureca_building.config import CONFIG
 
 from eureca_building.material import Material, AirGapMaterial
 from eureca_building.window import SimpleWindow

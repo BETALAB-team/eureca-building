@@ -9,6 +9,11 @@ __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
 import os
+from eureca_building.config import load_config
+
+config_path = os.path.join('.', 'eureca_building', 'test', 'config.ini')
+load_config(config_path)
+from eureca_building.config import CONFIG
 
 import pytest
 import numpy as np
@@ -33,7 +38,7 @@ class TestSchedule:
         Schedule(
             "Temperature1",
             "Temperature",
-            np.random.rand(100) + 10,
+            np.random.rand(8760) + 10,
         )
 
     def test_schedule_2(self):
@@ -42,7 +47,7 @@ class TestSchedule:
             Schedule(
                 "Temperature1",
                 "Temperature",
-                np.random.rand(100) + 10,
+                np.random.rand(8760) + 10,
                 upper_limit=5,
                 lower_limit=-10,
             )
@@ -66,7 +71,7 @@ class TestInternalHeatGains:
         sched = Schedule(
             "Percent1",
             "Percent",
-            np.array([0.1, .2, .3, .5]),
+            np.array([0.1, .2, .3, .5] * int(8760 / 4)),
             upper_limit=0.,
             lower_limit=1.,
         )
@@ -93,7 +98,7 @@ class TestInternalHeatGains:
         sched = Schedule(
             "Percent1",
             "Percent",
-            np.array([0.1, .2, .3, .5]),
+            np.array([0.1, .2, .3, .5] * int(8760 / 4)),
         )
 
         people1 = People(
@@ -107,6 +112,9 @@ class TestInternalHeatGains:
         )
 
         conv, rad, lat = people1.get_loads(area=2.)
+        conv = conv[:4]
+        rad = rad[:4]
+        lat = lat[:4]
         assert (
                 np.linalg.norm(conv - np.array([0.385, 0.77, 1.155, 1.925]) * 2) < 1e-5 and
                 np.linalg.norm(rad - np.array([0.165, 0.33, 0.495, 0.825]) * 2) < 1e-5 and
@@ -121,7 +129,7 @@ class TestInternalHeatGains:
         sched = Schedule(
             "Percent1",
             "Percent",
-            np.array([0.1, .2, .3, .5]),
+            np.array([0.1, .2, .3, .5] * int(8760 / 4)),
         )
 
         people1 = People(
@@ -136,6 +144,9 @@ class TestInternalHeatGains:
         )
 
         conv, rad, lat = people1.get_loads(area=2.)
+        conv = conv[:4]
+        rad = rad[:4]
+        lat = lat[:4]
         assert (
                 np.linalg.norm(conv - np.array([57.75,
                                                 115.5,
@@ -159,7 +170,7 @@ class TestInternalHeatGains:
         sched = Schedule(
             "Percent1",
             "Percent",
-            np.array([0.1, .2, .3, .5]),
+            np.array([0.1, .2, .3, .5] * int(8760 / 4)),
         )
 
         el1 = ElectricLoad(
@@ -173,6 +184,9 @@ class TestInternalHeatGains:
         )
 
         conv, rad, lat = el1.get_loads()
+        conv = conv[:4]
+        rad = rad[:4]
+        lat = lat[:4]
         assert (
                 np.linalg.norm(conv - np.array([4.95,
                                                 9.9,
@@ -202,6 +216,9 @@ class TestInternalHeatGains:
         )
 
         conv, rad, lat = el2.get_loads(area=2)
+        conv = conv[:4]
+        rad = rad[:4]
+        lat = lat[:4]
         assert (
                 np.linalg.norm(conv - np.array([0.99,
                                                 1.98,
@@ -232,6 +249,9 @@ class TestInternalHeatGains:
         )
 
         conv, rad, lat = el3.get_loads()
+        conv = conv[:4]
+        rad = rad[:4]
+        lat = lat[:4]
         assert (
                 np.linalg.norm(conv - np.array([1.485,
                                                 2.97,
@@ -262,6 +282,9 @@ class TestInternalHeatGains:
         )
 
         conv, rad, lat = l1.get_loads(area=2)
+        conv = conv[:4]
+        rad = rad[:4]
+        lat = lat[:4]
         assert (
                 np.linalg.norm(conv - np.array([0.99,
                                                 1.98,

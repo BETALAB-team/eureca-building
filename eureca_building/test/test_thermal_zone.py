@@ -9,7 +9,11 @@ __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
 import os
+from eureca_building.config import load_config
 
+config_path = os.path.join('.', 'eureca_building', 'test', 'config.ini')
+load_config(config_path)
+from eureca_building.config import CONFIG
 import pytest
 import numpy as np
 
