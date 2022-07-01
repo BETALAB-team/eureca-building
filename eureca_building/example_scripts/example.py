@@ -69,14 +69,14 @@ wall_2 = Surface(
 )
 floor_1 = Surface(
     "Fllor 1",
-    vertices=((0, 0, 0), (0, 1, 0), (1, 1, 0), (0, 1, 0)),
+    vertices=((0, 0, 0), (0, 1, 0), (1, 1, 0), (1, 0, 0)),
     wwr=0.0,
     surface_type="GroundFloor",
     construction=floor,
 )
 roof_1 = Surface(
     "Roof 1",
-    vertices=((0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)),
+    vertices=((0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)),
     wwr=0.4,
     surface_type="Roof",
     construction=ceiling,
@@ -107,7 +107,7 @@ tz1._VDI6007_params()
 people_sched = Schedule(
     "PeopleOccupancy1",
     "Percent",
-    np.array(([0.1] * 7 * 2 + [0.6] * 2 * 2 + [0.4] * 5 * 2 + [0.6] * 10 * 2) * 365),
+    np.array(([0.1] * 7 * 2 + [0.6] * 2 * 2 + [0.4] * 5 * 2 + [0.6] * 10 * 2) * 365)[:-1],
 )
 
 # Loads
@@ -143,4 +143,7 @@ pc = ElectricLoad(
 tz1.add_internal_load(people)
 tz1.add_internal_load(lights, pc)
 
+# IHG preprocessing
 tz_loads = tz1.extract_convective_radiative_latent_load()
+tz1.calculate_zone_loads_ISO13790(weather_file)
+tz1._plot_ISO13790_IHG()
