@@ -10,7 +10,28 @@ __maintainer__ = "Enrico Prataviera"
 
 import json
 import configparser
+import logging
 from datetime import datetime, timedelta
+
+DEFAULT_CONFIG_FILE = 'default_config.ini'
+
+
+def load_config(file: str):
+    global CONFIG
+    try:
+        if file.endswith('ini'):
+            CONFIG = Config()
+            CONFIG.read(file)
+        elif file.endswith('json'):
+            CONFIG = Config.from_json(file)
+    except FileNotFoundError:
+        message = "Config file not found: Trying to load default config"
+        print(message)
+        logging.warning(message)
+        CONFIG = DEFAULT_CONFIG_FILE
+
+    globals().update(CONFIG)
+    return CONFIG
 
 
 # %% ---------------------------------------------------------------------------------------------------

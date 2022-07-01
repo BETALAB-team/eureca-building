@@ -13,7 +13,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from eureca_building.config import Config
+from eureca_building.config import load_config
 from eureca_building.weather import WeatherFile
 from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.thermal_zone import ThermalZone
@@ -23,19 +23,18 @@ from eureca_building.construction_dataset import ConstructionDataset
 
 #########################################################
 # Config loading
-# from json
+# Loads a global config object
 config_path = os.path.join('..', 'example_scripts', 'config.json')
-config = Config.from_json(config_path)
-# from ini
-config_2 = Config()
-config_2.read(os.path.join('..', 'example_scripts', 'config.ini'))
+load_config(config_path)
+from eureca_building.config import CONFIG
+
 #########################################################
 # Epw loading
 epw_path = os.path.join('..', 'example_scripts', 'ITA_Venezia-Tessera.161050_IGDG.epw')
 weather_file = WeatherFile(epw_path,
-                           time_steps=config.ts_per_hour,
-                           azimuth_subdivisions=config.azimuth_subdivisions,
-                           height_subdivisions=config.height_subdivisions, )
+                           time_steps=CONFIG.ts_per_hour,
+                           azimuth_subdivisions=CONFIG.azimuth_subdivisions,
+                           height_subdivisions=CONFIG.height_subdivisions, )
 #########################################################
 path = os.path.join(
     "..",
