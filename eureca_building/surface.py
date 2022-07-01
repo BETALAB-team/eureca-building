@@ -12,6 +12,7 @@ import logging
 
 import numpy as np
 
+from eureca_building.config import CONFIG
 from eureca_building.construction import Construction
 from eureca_building.window import SimpleWindow
 from eureca_building.exceptions import (
@@ -126,6 +127,9 @@ class Surface:
         # Param Solar Calc
         if subdivisions_solar_calc is not None:
             self.subdivisions_solar_calc = subdivisions_solar_calc
+        else:
+            self.subdivisions_solar_calc = {"height_subdivisions": CONFIG.height_subdivisions,
+                                            "azimuth_subdivisions": CONFIG.azimuth_subdivisions, }
         # Surfcae type
         if surface_type is None:
             self._set_auto_surface_type()
@@ -420,6 +424,10 @@ class Surface:
                 f"Surface {self.name}, construction not specified"
             )
         return R1, C1
+
+    def get_surface_external_radiative_coefficient(self):
+        # From standard average value
+        return 5 * 0.9  # W/(m2 K)
 
 
 # %%---------------------------------------------------------------------------------------------------
