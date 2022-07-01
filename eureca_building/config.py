@@ -47,9 +47,15 @@ class Config(dict):
         config_dict.ts_per_hour = int(config_dict['simulation settings']['time steps per hour'])
         config_dict.start_date = datetime.strptime(config_dict['simulation settings']['start date'], "%m-%d %H:%M")
         config_dict.final_date = datetime.strptime(config_dict['simulation settings']['final date'], "%m-%d %H:%M")
-        config_dict.time_step = int(60 / config_dict.ts_per_hour)
+        config_dict.time_step = int(3600 / config_dict.ts_per_hour)  # s
         config_dict.number_of_time_steps = int((config_dict.final_date - config_dict.start_date) / timedelta(
-            minutes=config_dict.time_step)) + 1
+            minutes=config_dict.time_step / 60)) + 1
+        start_time_step = int(
+            (config_dict.start_date - datetime(config_dict.start_date.year, 1, 1, 00, 00, 00)) / timedelta(
+                minutes=config_dict.time_step / 60))
+        config_dict.start_time_step = start_time_step
+        config_dict.final_time_step = start_time_step + config_dict.number_of_time_steps
+
         # Radiation
         config_dict.azimuth_subdivisions = int(config_dict['solar radiation settings']["azimuth subdivisions"])
         config_dict.height_subdivisions = int(config_dict['solar radiation settings']["height subdivisions"])
