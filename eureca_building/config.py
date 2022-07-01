@@ -55,6 +55,7 @@ class Config(dict):
                 minutes=config_dict.time_step / 60))
         config_dict.start_time_step = start_time_step
         config_dict.final_time_step = start_time_step + config_dict.number_of_time_steps
+        config_dict.number_of_time_steps_year = int(8760 * 60 / (config_dict.time_step / 60))
 
         # Radiation
         config_dict.azimuth_subdivisions = int(config_dict['solar radiation settings']["azimuth subdivisions"])

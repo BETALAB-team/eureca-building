@@ -13,11 +13,11 @@ import logging
 import numpy as np
 
 from eureca_building.schedule_properties import schedule_types
-
 from eureca_building.exceptions import (
     InvalidScheduleType,
     ScheduleOutsideBoundaryCondition,
     InvalidScheduleDimension,
+    ScheduleLengthNotConsistent,
 )
 
 
@@ -131,6 +131,11 @@ Lower limit set to 1."""
         if np.any(np.less(value, self._lower_limit)):
             raise ScheduleOutsideBoundaryCondition(
                 f"Schedule {self.name}, there is a value below the lower limit: lower limit {self._lower_limit}"
+            )
+        if False:
+            # TODO: Find a way to check schedule length with a global config
+            raise ScheduleLengthNotConsistent(
+                f"Schedule {self.name}, the length of the schedule is not consistent with {self._lower_limit}"
             )
 
         self._schedule = value

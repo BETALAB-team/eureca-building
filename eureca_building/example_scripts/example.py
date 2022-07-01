@@ -24,7 +24,7 @@ from eureca_building.construction_dataset import ConstructionDataset
 #########################################################
 # Config loading
 config_path = os.path.join('..', 'example_scripts', 'config.json')
-config = Config.from_json(config_path)
+config = Config(config_path)
 #########################################################
 # Epw loading
 epw_path = os.path.join('..', 'example_scripts', 'ITA_Venezia-Tessera.161050_IGDG.epw')

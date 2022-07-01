@@ -102,6 +102,10 @@ class InvalidScheduleDimension(Exception):
     pass
 
 
+class ScheduleLengthNotConsistent(Exception):
+    pass
+
+
 class ConvectiveRadiantFractionError(Exception):
     pass
 
