@@ -9,11 +9,12 @@ __version__ = "0.1"
 __maintainer__ = "Enrico Prataviera"
 
 import json
+import configparser
 from datetime import datetime, timedelta
 
 
 # %% ---------------------------------------------------------------------------------------------------
-class Config(dict):
+class Config(configparser.ConfigParser):
     """
     This class is a container for config settings.
 
@@ -36,11 +37,33 @@ class Config(dict):
             raise ValueError(f"Config, time_step_per_hour must be a divider of 60")
         self._ts_per_hour = value
 
+    def read(self, file):
+        super().read(file)
+        # Generic config settings
+        self.ts_per_hour = int(self['simulation settings']['time steps per hour'])
+        self.start_date = datetime.strptime(self['simulation settings']['start date'], "%m-%d %H:%M")
+        self.final_date = datetime.strptime(self['simulation settings']['final date'], "%m-%d %H:%M")
+        self.time_step = int(3600 / self.ts_per_hour)  # s
+        self.number_of_time_steps = int((self.final_date - self.start_date) / timedelta(
+            minutes=self.time_step / 60)) + 1
+        start_time_step = int(
+            (self.start_date - datetime(self.start_date.year, 1, 1, 00, 00, 00)) / timedelta(
+                minutes=self.time_step / 60))
+        self.start_time_step = start_time_step
+        self.final_time_step = start_time_step + self.number_of_time_steps
+        self.number_of_time_steps_year = int(8760 * 60 / (self.time_step / 60))
+
+        # Radiation
+        self.azimuth_subdivisions = int(self['solar radiation settings']["azimuth subdivisions"])
+        self.height_subdivisions = int(self['solar radiation settings']["height subdivisions"])
+
     @classmethod
     def from_json(cls, file_path):
+        config_dict = cls()
         try:
+
             with open(file_path, "r") as json_data_file:
-                config_dict = cls(json.load(json_data_file))
+                config_dict.read_dict(json.load(json_data_file))
         except FileNotFoundError:
             raise FileNotFoundError(f"Config file {file_path} not found")
         # Generic config settings
