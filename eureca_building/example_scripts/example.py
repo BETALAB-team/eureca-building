@@ -17,7 +17,7 @@ import numpy as np
 # Loads a global config object
 from eureca_building.config import load_config
 
-config_path = os.path.join('.', 'example_scripts', 'config.json')
+config_path = os.path.join('.', 'config.json')
 load_config(config_path)
 from eureca_building.config import CONFIG
 
