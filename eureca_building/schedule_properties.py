@@ -10,11 +10,11 @@ the properties using a JSON/Dictionary structure
 """
 schedule_types = {
     "unit_type": [
-        "Dimensionless",
-        "Percent",
-        "Temperature",
-        "Capacity",
-        "Power",
+        "dimensionless",
+        "percent",
+        "temperature",
+        "capacity",
+        "power",
     ]
 }
 

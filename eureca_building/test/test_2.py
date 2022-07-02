@@ -37,7 +37,7 @@ class TestSchedule:
         # Standard schedule
         Schedule(
             "Temperature1",
-            "Temperature",
+            "temperature",
             np.random.rand(8760) + 10,
         )
 
@@ -46,7 +46,7 @@ class TestSchedule:
         with pytest.raises(ScheduleOutsideBoundaryCondition):
             Schedule(
                 "Temperature1",
-                "Temperature",
+                "temperature",
                 np.random.rand(8760) + 10,
                 upper_limit=5,
                 lower_limit=-10,
@@ -70,7 +70,7 @@ class TestInternalHeatGains:
         # Standard IHG
         sched = Schedule(
             "Percent1",
-            "Percent",
+            "percent",
             np.array([0.1, .2, .3, .5] * int(8760 / 4)),
             upper_limit=0.,
             lower_limit=1.,
@@ -97,7 +97,7 @@ class TestInternalHeatGains:
         # Standard IHG
         sched = Schedule(
             "Percent1",
-            "Percent",
+            "percent",
             np.array([0.1, .2, .3, .5] * int(8760 / 4)),
         )
 
@@ -128,7 +128,7 @@ class TestInternalHeatGains:
         # Standard IHG
         sched = Schedule(
             "Percent1",
-            "Percent",
+            "percent",
             np.array([0.1, .2, .3, .5] * int(8760 / 4)),
         )
 
@@ -169,7 +169,7 @@ class TestInternalHeatGains:
         # Standard IHG
         sched = Schedule(
             "Percent1",
-            "Percent",
+            "percent",
             np.array([0.1, .2, .3, .5] * int(8760 / 4)),
         )
 
