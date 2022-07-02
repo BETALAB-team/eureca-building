@@ -78,7 +78,7 @@ class InternalLoad:
     def schedule(self, value):
         if not isinstance(value, Schedule):
             raise ValueError(f"Internal Heat Gain {self.name}, schedule type not Schedule: {type(value)}")
-        if value.schedule_type not in ["Dimensionless", "Percent", ]:
+        if value.schedule_type not in ["dimensionless", "percent", ]:
             raise InvalidHeatGainSchedule(
                 f"Internal Heat Gain {self.name}, schedule type must be 'Dimensionless' or 'Percent': {value.schedule_type}"
             )

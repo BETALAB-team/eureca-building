@@ -93,20 +93,20 @@ class SetpointDualBand(Setpoint):
     def schedule_lower(self, value):
         if not isinstance(value, Schedule):
             raise ValueError(f"Setpoint {self.name}, lower schedule type not Schedule: {type(value)}")
-        if np.any(np.less(value, setpoint_prop[self.setpoint_type]['limit'][0])):
+        if np.any(np.less(value.schedule, setpoint_prop[self.setpoint_type]['limit'][0])):
             logging.warning(
                 f"Setpoint {self.name}, lower schedule goes below {setpoint_prop[self.setpoint_type]['limit'][0]} {setpoint_prop[self.setpoint_type]['unit']}")
         self._schedule_lower = value
 
     @property
     def schedule_upper(self):
-        return self._schedule_lower
+        return self._schedule_upper
 
-    @schedule_lower.setter
-    def schedule_lower(self, value):
+    @schedule_upper.setter
+    def schedule_upper(self, value):
         if not isinstance(value, Schedule):
             raise ValueError(f"Setpoint {self.name}, lower schedule type not Schedule: {type(value)}")
-        if np.any(np.greater(value, setpoint_prop[self.setpoint_type]['limit'][1])):
+        if np.any(np.greater(value.schedule, setpoint_prop[self.setpoint_type]['limit'][1])):
             logging.warning(
                 f"Setpoint {self.name}, lower schedule goes above {setpoint_prop[self.setpoint_type]['limit'][1]} {setpoint_prop[self.setpoint_type]['unit']}")
-        self._schedule_lower = value
+        self._schedule_upper = value

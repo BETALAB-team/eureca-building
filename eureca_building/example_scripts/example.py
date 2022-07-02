@@ -29,6 +29,7 @@ from eureca_building.thermal_zone import ThermalZone
 from eureca_building.internal_load import People, Lights, ElectricLoad
 from eureca_building.schedule import Schedule
 from eureca_building.construction_dataset import ConstructionDataset
+from eureca_building.setpoints import SetpointDualBand
 
 #########################################################
 # Epw loading
@@ -105,7 +106,7 @@ tz1._VDI6007_params()
 # A schedule
 people_sched = Schedule(
     "PeopleOccupancy1",
-    "Percent",
+    "percent",
     np.array(([0.1] * 7 * 2 + [0.6] * 2 * 2 + [0.4] * 5 * 2 + [0.6] * 10 * 2) * 365)[:-1],
 )
 
@@ -145,8 +146,47 @@ tz1.add_internal_load(lights, pc)
 # IHG preprocessing
 tz_loads = tz1.extract_convective_radiative_latent_load()
 tz1.calculate_zone_loads_ISO13790(weather_file)
-tz1._plot_ISO13790_IHG()
+# tz1._plot_ISO13790_IHG()
 
 # 2C model
 tz1.calculate_zone_loads_VDI6007(weather_file)
-tz1._plot_VDI6007_IHG(weather_file)
+# tz1._plot_VDI6007_IHG(weather_file)
+
+#########################################################
+# Setpoints
+heat_t = Schedule(
+    "t_heat",
+    "temperature",
+    np.array(([18] * 7 * 2 + [21] * 2 * 2 + [18] * 5 * 2 + [21] * 10 * 2) * 365)[:-1],
+)
+
+cool_t = Schedule(
+    "t_heat",
+    "temperature",
+    np.array(([28] * 8 * 2 + [26] * 2 * 2 + [28] * 4 * 2 + [26] * 10 * 2) * 365)[:-1],
+)
+
+heat_h = Schedule(
+    "h_heat",
+    "dimensionless",
+    np.array(([0.1] * 7 * 2 + [0.3] * 2 * 2 + [.1] * 5 * 2 + [.3] * 10 * 2) * 365)[:-1],
+)
+
+cool_h = Schedule(
+    "h_heat",
+    "dimensionless",
+    np.array(([.9] * 8 * 2 + [.5] * 2 * 2 + [.9] * 4 * 2 + [.5] * 10 * 2) * 365)[:-1],
+)
+
+t_sp = SetpointDualBand(
+    "t_sp",
+    "temperature",
+    schedule_lower=heat_t,
+    schedule_upper=cool_t,
+)
+h_sp = SetpointDualBand(
+    "h_sp",
+    "relative_humidity",
+    schedule_lower=heat_h,
+    schedule_upper=cool_h,
+)
