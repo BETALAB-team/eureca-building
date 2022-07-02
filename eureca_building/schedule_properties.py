@@ -48,15 +48,16 @@ internal_loads_prop = {
     },
 }
 
-#     },
-#     "setpoint": {
-#         "temperature": {
-#             "unit": ["C"],
-#         },
-#         "humidity": {
-#             "unit": ["%", "kg_v/kg_as"],
-#         },
-#     },
+setpoint_prop = {
+    "temperature": {
+        "unit": ["°C", "F", ],
+        "tags": [],
+    },
+    "humidity": {
+        "unit": ["-", "%", ],  # Eventually add the specific humidity
+        "tags": [],
+    },
+}
 #
 #     "ventilation": {
 #         "mechanical": {
