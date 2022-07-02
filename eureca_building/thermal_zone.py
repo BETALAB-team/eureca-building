@@ -10,6 +10,7 @@ __maintainer__ = "Enrico Prataviera"
 
 import logging
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import interpolate
@@ -17,7 +18,7 @@ from scipy import interpolate
 from eureca_building.config import CONFIG
 from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.fluids_properties import air_properties
-from eureca_building._VDI6007_auxiliary_functions import impedence_parallel, tri2star
+from eureca_building._VDI6007_auxiliary_functions import impedence_parallel, tri2star, long_wave_radiation, loadHK
 from eureca_building.internal_load import Lights, ElectricLoad, People, InternalLoad
 from eureca_building.weather import WeatherFile
 from eureca_building.exceptions import (
@@ -235,11 +236,15 @@ class ThermalZone(object):
         AreaAW = np.array([])
         AreaAF = np.array([])
         AreaIW = np.array([])
+        self.Araum = 0
+        self.Aaw = 0
 
         # Cycling surface to calculates the Resistance and capacitance of the vdi 6007
 
         for surface in self._surface_list:
+            self.Araum += surface._area
             if surface.surface_type in ["ExtWall", "GroundFloor", "Roof"]:
+                self.Aaw += surface._area
                 surface_R1, surface_C1 = surface.get_VDI6007_surface_params(asim=True)
                 C1AW_v = np.append(C1AW_v, [surface_C1], axis=0)
                 # Opaque params
@@ -451,9 +456,147 @@ class ThermalZone(object):
         self.phi_st = (1 - self.Am / self.Atot - self.Htr_w / (9.1 * self.Atot)) * (phi_int['radiative [W]'] + phi_sol)
         self.phi_m = self.Am / self.Atot * (phi_int['radiative [W]'] + phi_sol)
 
+    def calculate_zone_loads_VDI6007(self, weather):
+        '''
+        Calculates zone loads for the vdi 6007 standard
+        Also the external equivalent temperature
+
+        Parameters
+        ----------
+            weather : RC_classes.WeatherData.weather
+                weather obj
+
+        Returns
+        -------
+        None
+        '''
+
+        # Check input data type
+
+        if not isinstance(weather, WeatherFile):
+            raise TypeError(f'ThermalZone {self.name}, weather type is not a WeatherFile: weather type {type(weather)}')
+
+        '''
+        Eerd = Solar_gain['0.0']['0.0']['Global']*rho_ground                          #
+        Eatm = Solar_gain['0.0']['0.0']['Global']-Solar_gain['0.0']['0.0']['Direct']
+
+        T_ext vettore
+
+        '''
+
+        Eatm, Eerd, theta_erd, theta_atm = long_wave_radiation(weather.hourly_data['out_air_db_temperature'])
+
+        # Creates some vectors and set some parameters
+
+        T_ext = weather.hourly_data['out_air_db_temperature']
+        theta_eq = np.zeros([len(T_ext), len(self._surface_list)])
+        delta_theta_eq_lw = np.zeros([len(T_ext), len(self._surface_list)])
+        delta_theta_eq_kw = np.zeros([len(T_ext), len(self._surface_list)])
+        theta_eq_w = np.zeros([len(T_ext), len(self._surface_list)])
+        Q_il_str_A_iw = 0
+        Q_il_str_A_aw = 0
+
+        # Solar radiation
+        irradiances = weather.hourly_data_irradiances
+
+        i = -1
+
+        # Lists all surfaces to calculate the irradiance on each one and creates the solar gains
+
+        for surface in self._surface_list:
+            i += 1
+            if surface.surface_type in ['ExtWall', 'Roof']:
+                # Some value loaded from surface and weather object
+                h_r = surface.get_surface_external_radiative_coefficient()
+                alpha_str_a = surface.construction.rad_heat_trans_coef
+                alpha_a = surface.construction._conv_heat_trans_coef_ext + alpha_str_a
+                phi = surface._sky_view_factor
+                # TODO: External shading in urban contex
+                F_sh_op = 1.
+                irradiance = irradiances[float(surface._azimuth_round)][float(surface._height_round)]
+                AOI = irradiance['AOI']
+                BRV = irradiance['direct']
+                TRV = irradiance['global']
+                # Delta T long wave
+                delta_theta_eq_lw[:, i] = ((theta_erd - T_ext) * (1 - phi) + \
+                                           (theta_atm - T_ext) * phi) * h_r / (0.93 * alpha_a)
+                delta_theta_eq_kw[:, i] = (BRV * F_sh_op + (TRV - BRV)) * surface.construction.ext_absorptance / alpha_a
+                theta_eq[:, i] = (T_ext + delta_theta_eq_lw[:, i] + delta_theta_eq_kw[:, i]) * \
+                                 surface.construction._u_value * surface._opaque_area / self.UA_tot
+                if hasattr(surface, 'window'):
+                    theta_eq_w[:, i] = (T_ext + delta_theta_eq_lw[:, i]) * \
+                                       surface.window.u_value * surface._glazed_area / self.UA_tot
+                    frame_factor = 1 - surface.window._frame_factor
+                    F_sh = surface.window._shading_coef_ext
+                    F_w = surface.window._shading_coef_int
+                    F_sh_w = F_sh * F_w
+
+                    shgc = interpolate.splev(AOI, surface.window.solar_heat_gain_coef_profile, der=0)
+                    shgc_diffuse = interpolate.splev(70, surface.window.solar_heat_gain_coef_profile, der=0)
+                    # Jacopo quì usa come A_v l'area finestrata, mentre la norma parla di area finestrata + opaca per la direzione
+                    Q_il_str_A_iw += frame_factor * surface._glazed_area * (
+                            shgc * BRV * F_sh_w + shgc_diffuse * (TRV - BRV)) * (
+                                             (self.Araum - self.Aaw) / (self.Araum - surface._glazed_area))
+                    Q_il_str_A_aw += frame_factor * surface._glazed_area * (
+                            shgc * BRV * F_sh_w + shgc_diffuse * (TRV - BRV)) * (
+                                             (self.Aaw - surface._glazed_area) / (self.Araum - surface._glazed_area))
+
+            if surface.surface_type == 'GroundFloor':
+                theta_eq[:, i] = T_ext * surface.construction._u_value * surface._opaque_area / self.UA_tot
+
+        # self.Q_il_str_A = self.Q_il_str_A.to_numpy()
+        # self.carichi_sol = (Q_il_str_A_iw+ Q_il_str_A_aw).to_numpy()
+
+        self.theta_eq_tot = theta_eq.sum(axis=1) + theta_eq_w.sum(axis=1)
+
+        # Calculates internal heat gains
+        phi_int = self.extract_convective_radiative_latent_load()
+
+        Q_il_str_I = phi_int['radiative [W]']
+        self.Q_il_kon_I = phi_int['convective [W]']
+
+        Q_il_str_I_iw = Q_il_str_I * (self.Araum - self.Aaw) / self.Araum
+        Q_il_str_I_aw = Q_il_str_I * self.Aaw / self.Araum
+
+        self.Q_il_str_iw = Q_il_str_A_iw + Q_il_str_I_iw
+        self.Q_il_str_aw = Q_il_str_A_aw + Q_il_str_I_aw
+
+        """
+        sigma_fhk: fraction of radiant heating/cooling surfaces on total heating/cooling load
+        sigma_fhk_aw: fraction of radiant heating/cooling inside external walls on the total radiant heating/cooling load
+        sigma_hk_str: this is the radiant fraction the heating/cooling systems that are not embedded in the surfaces
+        
+        Let's say that a roof has 3 systems: 
+            1) a radiant internal ceiling (20% of the total load) 
+            2) a radiant floor (30% of the total load) in contact to the ground
+            3) a radiator working 80% convective and 20% radiant (50% of the total load)
+            
+        sigma_fhk: 0.5 
+            sum of 20% for the radiant ceiling and 30% for the radiant floor
+        sigma_fhk_aw: 0.6
+            because 0.3/(0.2+0.3) is equal to 0.6, i.e. the part of the radiant surface load 
+            associated to external surfaces
+        sigma_hk_str: 0.2
+            because the radiator is radiative for the 20%        
+        """
+        # self.sigma = loadHK(sigma_fhk, sigma_fhk_aw, sigma_hk_str, self.Aaw, self.Araum)
+
     def _plot_ISO13790_IHG(self):
+        fig, ax = plt.subplots()
         pd.DataFrame({
             'phi_ia': self.phi_ia,
             'phi_st': self.phi_st,
             'phi_m': self.phi_m
-        }).plot()
+        }).plot(ax=ax)
+
+    def _plot_VDI6007_IHG(self, weather_file):
+        fig, [ax1, ax2] = plt.subplots(nrows=2)
+        pd.DataFrame({
+            'Q_il_kon_I': self.Q_il_kon_I,
+            'Q_il_str_iw': self.Q_il_str_iw,
+            'Q_il_str_aw': self.Q_il_str_aw
+        }).plot(ax=ax1)
+        pd.DataFrame({
+            'theta_eq_tot': self.theta_eq_tot,
+            'theta_ext': weather_file.hourly_data['out_air_db_temperature']
+        }).plot(ax=ax2)

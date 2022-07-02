@@ -11,7 +11,6 @@ __maintainer__ = "Enrico Prataviera"
 import os
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 #########################################################
 # Config loading
@@ -19,7 +18,7 @@ import matplotlib.pyplot as plt
 from eureca_building.config import load_config
 
 config_path = os.path.join('.', 'example_scripts', 'config.json')
-load_config()
+load_config(config_path)
 from eureca_building.config import CONFIG
 
 #########################################################
@@ -84,7 +83,7 @@ roof_1 = Surface(
 )
 intwall_1 = SurfaceInternalMass(
     "Roof 1",
-    area=0.,
+    area=2.,
     surface_type="IntWall",
     construction=ext_wall,
 )
@@ -147,3 +146,7 @@ tz1.add_internal_load(lights, pc)
 tz_loads = tz1.extract_convective_radiative_latent_load()
 tz1.calculate_zone_loads_ISO13790(weather_file)
 tz1._plot_ISO13790_IHG()
+
+# 2C model
+tz1.calculate_zone_loads_VDI6007(weather_file)
+tz1._plot_VDI6007_IHG(weather_file)
