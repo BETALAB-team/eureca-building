@@ -124,3 +124,6 @@ class AreaNotProvided(Exception):
 
 class PeopleNotProvided(Exception):
     pass
+
+class SetpointTypeNotAllowed(Exception):
+    pass

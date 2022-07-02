@@ -50,13 +50,16 @@ internal_loads_prop = {
 
 setpoint_prop = {
     "temperature": {
-        "unit": ["°C", "F", ],
+        "unit": "°C",
+        "limit": [-50., 60.],  # Throws just a warning
         "tags": [],
     },
-    "humidity": {
-        "unit": ["-", "%", ],  # Eventually add the specific humidity
+    "relative_humidity": {
+        "unit": "-",
+        "limit": [0., 1.],  # Throws just a warning
         "tags": [],
     },
+    # Eventually add the specific humidity
 }
 #
 #     "ventilation": {
