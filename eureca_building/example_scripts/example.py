@@ -190,3 +190,9 @@ h_sp = SetpointDualBand(
     schedule_lower=heat_h,
     schedule_upper=cool_h,
 )
+
+tz1.add_temperature_setpoint(t_sp)
+tz1.add_humidity_setpoint(h_sp)
+
+#########################################################
+# Ventilation
