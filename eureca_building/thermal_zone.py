@@ -21,6 +21,7 @@ from eureca_building.fluids_properties import air_properties
 from eureca_building._VDI6007_auxiliary_functions import impedence_parallel, tri2star, long_wave_radiation, loadHK
 from eureca_building.internal_load import Lights, ElectricLoad, People, InternalLoad
 from eureca_building.weather import WeatherFile
+from eureca_building.setpoints import Setpoint
 from eureca_building.exceptions import (
     Non3ComponentsVertex,
     SurfaceWrongNumberOfVertices,
@@ -118,7 +119,7 @@ class ThermalZone(object):
         except ValueError:
             raise TypeError(f"Thermal zone {self.name}, volume is not an float: {value}")
         if value < 0.0:
-            raise logging.error(
+            logging.error(
                 f"Thermal zone {self.name}, negative volume: {value}. Simulation will continue with the absolute value"
             )
         if float(abs(value)) < 1e-5:
@@ -138,13 +139,101 @@ class ThermalZone(object):
         except ValueError:
             raise TypeError(f"Thermal zone {self.name}, air thermal capacity is not an float: {value}")
         if value < 0.0:
-            raise logging.error(
+            logging.error(
                 f"Thermal zone {self.name}, negative air thermal capacity: {value}. Simulation will continue with the absolute value"
             )
         if float(abs(value)) < 1e-5:
             self.__air_thermal_capacity = 1e-5
         else:
             self.__air_thermal_capacity = abs(value)
+
+    def add_temperature_setpoint(self, setpoint, mode='air'):
+        """
+        Function to associate a setpoint to the thermal zone
+
+        Args:
+            setpoint: Setpoint
+                object of the class Setpoint
+            mode: str
+                setpoint mode: ['air', 'operative', 'radiant']
+
+        Returns:
+            None
+        """
+        self.temperature_setpoint = setpoint
+        self.temperature_setpoint_mode = mode
+
+    @property
+    def temperature_setpoint(self, value) -> Setpoint:
+        self._temperature_setpoint = value
+
+    @temperature_setpoint.setter
+    def temperature_setpoint(self, value: Setpoint):
+        if not isinstance(value, Setpoint):
+            raise TypeError(
+                f"Thermal zone {self.name}, setpoint must be a Setpoint object"
+            )
+        self._temperature_setpoint = value
+
+    @property
+    def temperature_setpoint_mode(self, value) -> str:
+        self._temperature_setpoint_mode = value
+
+    @temperature_setpoint_mode.setter
+    def temperature_setpoint_mode(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError(
+                f"Thermal zone {self.name}, setpoint mode must be a str"
+            )
+        if value not in ['air', 'operative', 'radiant']:
+            raise ValueError(
+                f"Thermal zone {self.name}, setpoint mode must be chosen from 'air', 'operative', 'radiant'"
+            )
+        self._temperature_setpoint_mode = value
+
+    def add_humidity_setpoint(self, setpoint, mode='relative'):
+        """
+        Function to associate a humidity setpoint to the thermal zone
+
+        Args:
+            setpoint: Setpoint
+                object of the class Setpoint
+            mode: str
+                setpoint mode: ['relative', 'specific']
+
+        Returns:
+            None
+        """
+        self.humidity_setpoint = setpoint
+        self.humidity_setpoint_mode = mode
+
+    @property
+    def humidity_setpoint(self, value) -> Setpoint:
+        self._humidity_setpoint = value
+
+    @humidity_setpoint.setter
+    def humidity_setpoint(self, value: Setpoint):
+        if not isinstance(value, Setpoint):
+            raise TypeError(
+                f"Thermal zone {self.name}, setpoint must be a Setpoint object"
+            )
+        self._humidity_setpoint = value
+
+    @property
+    def humidity_setpoint_mode(self, value) -> str:
+        self._humidity_setpoint_mode = value
+
+    @humidity_setpoint_mode.setter
+    def humidity_setpoint_mode(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError(
+                f"Thermal zone {self.name}, setpoint mode must be a str"
+            )
+        if value not in ['relative', 'specific']:
+            raise ValueError(
+                f"Thermal zone {self.name}, setpoint mode must be chosen from 'relative', 'specific'"
+            )
+        self._humidity_setpoint_mode = value
 
     def _ISO13790_params(self):
         '''

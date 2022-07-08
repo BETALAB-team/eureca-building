@@ -84,6 +84,9 @@ class SetpointDualBand(Setpoint):
         super().__init__(name, setpoint_type, tag)
         self.schedule_lower = schedule_lower
         self.schedule_upper = schedule_upper
+        # Check if setpoints schedules are not intersecting
+        if np.any(np.greater_equal(self.schedule_lower.schedule, self.schedule_upper.schedule)):
+            raise ValueError(f"Setpoint {self.name}, lower schedule higher than upper schedule.")
 
     @property
     def schedule_lower(self):
