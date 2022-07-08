@@ -75,6 +75,9 @@ class ThermalZone(object):
 
         self.internal_loads_list = []
         self.natural_ventilation_list = []
+        self.design_heating_system_power = 1e20  # W
+        self.design_cooling_system_power = -1e20  # W
+        self.reset_init_values()
 
     @property
     def _surface_list(self) -> float:
@@ -1002,3 +1005,21 @@ class ThermalZone(object):
 
         else:
             return 'wrong flag'
+
+    def reset_init_values(self):
+        '''
+        This method allows to reset temperatures starting values
+
+        Parameters
+            ----------
+            None
+
+        Returns
+        -------
+        None.
+        '''
+
+        self.Ta0 = 15
+        self.Tm0 = np.array([15, 15])
+
+
