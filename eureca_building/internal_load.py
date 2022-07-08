@@ -19,7 +19,7 @@ from eureca_building.fluids_properties import vapour_properties
 from eureca_building.exceptions import (
     ConvectiveRadiantFractionError,
     InvalidHeatGainUnit,
-    InvalidHeatGainSchedule,
+    InvalidScheduleType,
     AreaNotProvided,
     PeopleNotProvided,
 )
@@ -79,7 +79,7 @@ class InternalLoad:
         if not isinstance(value, Schedule):
             raise ValueError(f"Internal Heat Gain {self.name}, schedule type not Schedule: {type(value)}")
         if value.schedule_type not in ["dimensionless", "percent", ]:
-            raise InvalidHeatGainSchedule(
+            raise InvalidScheduleType(
                 f"Internal Heat Gain {self.name}, schedule type must be 'Dimensionless' or 'Percent': {value.schedule_type}"
             )
         self._schedule = value

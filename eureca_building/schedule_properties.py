@@ -61,16 +61,12 @@ setpoint_prop = {
     },
     # Eventually add the specific humidity
 }
-#
-#     "ventilation": {
-#         "mechanical": {
-#             "unit": ["Vol/h", "kg/s", "kg/(m2 s)", "m3/s", "m3/(m2 s)"],
-#         },
-#         "natural": {
-#             "unit": ["Vol/h", "kg/s", "kg/(m2 s)", "m3/s", "m3/(m2 s)"],
-#         },
-#         "infiltration": {
-#             "unit": ["Vol/h", "kg/s", "kg/(m2 s)", "m3/s", "m3/(m2 s)"],
-#         },
-#     },
-# }
+
+ventilation_prop = {
+    "mechanical": {
+        "unit": ["Vol/h", "kg/s", "kg/(m2 s)", "m3/s", "m3/(m2 s)"],
+    },
+    "natural": {
+        "unit": ["Vol/h", "kg/s", "kg/(m2 s)", "m3/s", "m3/(m2 s)"],
+    },
+}
