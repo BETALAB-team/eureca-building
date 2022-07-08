@@ -210,3 +210,8 @@ inf_obj = NaturalVentilation(
     nominal_value=1.,
     schedule=infiltration_sched,
 )
+
+# Natural Ventilation preprocessing
+tz1.add_natural_ventilation(inf_obj)
+tz_inf = tz1.extract_natural_ventilation(weather_file)
+tz1._plot_Zone_Natural_Ventilation(weather_file)

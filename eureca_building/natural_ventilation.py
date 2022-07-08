@@ -188,4 +188,4 @@ class NaturalVentilation:
             volume = kwargs['volume']
         vapuor = self.get_vapour_flow_rate(weather, area=area, volume=volume)
         air = self.get_air_flow_rate(area=area, volume=volume)
-        return vapuor, air
+        return air, vapuor

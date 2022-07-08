@@ -20,6 +20,7 @@ from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.fluids_properties import air_properties
 from eureca_building._VDI6007_auxiliary_functions import impedence_parallel, tri2star, long_wave_radiation, loadHK
 from eureca_building.internal_load import Lights, ElectricLoad, People, InternalLoad
+from eureca_building.natural_ventilation import NaturalVentilation
 from eureca_building.weather import WeatherFile
 from eureca_building.setpoints import Setpoint
 from eureca_building.exceptions import (
@@ -73,6 +74,7 @@ class ThermalZone(object):
             self._net_floor_area = net_floor_area
 
         self.internal_loads_list = []
+        self.natural_ventilation_list = []
 
     @property
     def _surface_list(self) -> float:
@@ -689,4 +691,62 @@ class ThermalZone(object):
         pd.DataFrame({
             'theta_eq_tot': self.theta_eq_tot,
             'theta_ext': weather_file.hourly_data['out_air_db_temperature']
+        }).plot(ax=ax2)
+
+    def add_natural_ventilation(self, *natural_ventilation):
+        """
+        Function to associate a natural ventilation object to the thermal zone
+
+        Args:
+            natural_ventilation: NaturalVentilation
+
+        Returns:
+            None
+        """
+        for nat_vent in natural_ventilation:
+            if not isinstance(nat_vent, NaturalVentilation):
+                raise TypeError(
+                    f"ThermalZone {self.name}, add_natural_ventilation() method: natural_ventilation not of NaturalVentilation type: {type(nat_vent)}"
+                )
+            self.natural_ventilation_list.append(nat_vent)
+
+    def extract_natural_ventilation(self, weather):
+        """
+        From the natural_ventilation_list calculates 2 arrays (len equal to 8769 * number of time steps per hour):
+        {
+        air mass flow rate [kg/s] : np.array
+        vapour mass flow rate [kg/s] : np.array
+        }
+
+        Args:
+            weather: Weather
+                weather object
+
+        Returns:
+            dict
+        """
+        natural_ventilation_air_flow_rate = np.zeros(CONFIG.number_of_time_steps_year)
+        natural_ventilation_vapour_flow_rate = np.zeros(CONFIG.number_of_time_steps_year)
+        for vent in self.natural_ventilation_list:
+            air_rate, vapour_rate = vent.get_flow_rate(weather, area=self._net_floor_area, volume=self._volume)
+            natural_ventilation_air_flow_rate += air_rate
+            natural_ventilation_vapour_flow_rate += vapour_rate
+        self.natural_ventilation_air_flow_rate = natural_ventilation_air_flow_rate
+        self.natural_ventilation_vapour_flow_rate = natural_ventilation_vapour_flow_rate
+        return {'natural_ventilation_air_flow_rate [kg/s]': natural_ventilation_air_flow_rate,
+                'natural_ventilation_vapour_flow_rate [kg/s]': natural_ventilation_vapour_flow_rate, }
+
+    def _plot_Zone_Natural_Ventilation(self, weather_file):
+        fig, [ax1, ax2] = plt.subplots(nrows=2)
+        ax1_ = ax1.twinx()
+        pd.DataFrame({
+            'natural_ventilation_air_flow_rate [kg/s]': self.natural_ventilation_air_flow_rate,
+        }).plot(ax=ax1)
+        pd.DataFrame({
+            'natural_ventilation_vapour_flow_rate [kg/s]': self.natural_ventilation_vapour_flow_rate,
+        }).plot(ax=ax1_, color='r')
+        pd.DataFrame({
+            'oa_specific_humidity': weather_file.hourly_data['out_air_specific_humidity'],
+            'theta_ext': weather_file.hourly_data['out_air_db_temperature'],
+            'oa_relative_humidity': weather_file.hourly_data['out_air_relative_humidity']
         }).plot(ax=ax2)
