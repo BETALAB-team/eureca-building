@@ -191,7 +191,7 @@ class ThermalZone(object):
             )
         self._temperature_setpoint_mode = value
 
-    def add_humidity_setpoint(self, setpoint, mode='relative'):
+    def add_humidity_setpoint(self, setpoint):
         """
         Function to associate a humidity setpoint to the thermal zone
 
@@ -199,13 +199,14 @@ class ThermalZone(object):
             setpoint: Setpoint
                 object of the class Setpoint
             mode: str
-                setpoint mode: ['relative', 'specific']
+                setpoint mode: ['relative_humidity']
 
         Returns:
             None
         """
         self.humidity_setpoint = setpoint
-        self.humidity_setpoint_mode = mode
+        # the mode is in the SP object
+        self.humidity_setpoint_mode = setpoint.setpoint_type
 
     @property
     def humidity_setpoint(self, value) -> Setpoint:
@@ -229,9 +230,9 @@ class ThermalZone(object):
             raise TypeError(
                 f"Thermal zone {self.name}, setpoint mode must be a str"
             )
-        if value not in ['relative', 'specific']:
+        if value not in ['relative_humidity']:
             raise ValueError(
-                f"Thermal zone {self.name}, setpoint mode must be chosen from 'relative', 'specific'"
+                f"Thermal zone {self.name}, setpoint mode must be chosen from 'relative_humidity'"
             )
         self._humidity_setpoint_mode = value
 
