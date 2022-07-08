@@ -23,7 +23,7 @@ from eureca_building.exceptions import (
 
 class NaturalVentilation:
     """
-    Internal Gain Class
+    Ventilation
     """
 
     def __init__(
@@ -50,6 +50,7 @@ class NaturalVentilation:
                 a tag to define the type of internal load
         """
         self.name = name
+        self.unit = unit
         self.nominal_value = nominal_value
         self.schedule = schedule
         self.tag = tag
@@ -116,35 +117,65 @@ class NaturalVentilation:
                 "m3/(m2 s)": self.nominal_value * area * air_density,
             }[self.unit]
         except TypeError:
-            # TODO
-            pass
+            raise AttributeError(
+                f"Ventilation object  {self.name}, to calculate ventilation mass flow rate with specific unit you have to provide a volume or an area"
+            )
+        except KeyError:
+            raise ValueError(
+                f"Ventilation object  {self.name}, unit must be chosen from: {ventilation_prop['natural']['unit']}"
+            )
 
-    def get_air_flow_rate(self, *args, **kwarg) -> np.array:
-        raise NotImplementedError(
-            f"""
-You must override the get_convective_load method for each class inherited from InternalLoad
-Return value must be a np.array
-"""
-        )
-
-    def get_vapour_flow_rate(self, *args, **kwarg) -> np.array:
-        raise NotImplementedError(
-            f"""
-You must override the get_radiant_load method for each class inherited from InternalLoad
-Return value must be a np.array
-"""
-        )
-
-    def get_flow_rate(self, *args, **kwargs) -> list:
+    def get_air_flow_rate(self, area=None, volume=None) -> np.array:
         """
-        Return the convective, radiant, latent load np.array
-        If the calculation method is specific (W/m2 or px/m2) the area must be passed
+        Calc the air mass flow rate in kg/s
         Args:
-            area: None
+            area: float
+                area [m2]
+            volume: float
+                volume [m3]
+
+        Returns:
+            np.array
+
+        """
+        try:
+            self.nominal_value_absolute
+        except AttributeError:
+            self._get_absolute_value_nominal(area=area, volume=volume)
+        return self.nominal_value_absolute * self.schedule.schedule
+
+    def get_vapour_flow_rate(self, weather, area=None, volume=None) -> np.array:
+        """
+        Calc the vapour mass flow rate in kg/s
+        Args:
+            weather: Weather
+                Weather class object
+            area: float
+                area [m2]
+            volume: float
+                volume [m3]
+
+        Returns:
+            np.array
+
+        """
+        try:
+            self.nominal_value_absolute
+        except AttributeError:
+            self._get_absolute_value_nominal(area=area, volume=volume)
+        return self.nominal_value_absolute * self.schedule.schedule * weather.hourly_data['out_air_specific_humidity']
+
+    def get_flow_rate(self, weather, *args, **kwargs) -> list:
+        """
+        Return the air and vapour flow rate from natural ventilation.
+        weather object must be passed
+        Args:
+            weather: Weather
+                weather object used for outdoor specific humidity
 
         Returns:
             [np.array, np.array, np.array]:
-                the schedules: convective [W], radiant [W], vapour [kg_vap/s]
+                the schedules: air flow rate [kg/s], vapour [kg/s]
 
         """
         if "area" not in kwargs.keys():
@@ -152,9 +183,9 @@ Return value must be a np.array
         else:
             area = kwargs['area']
         if "volume" not in kwargs.keys():
-            area = None
+            volume = None
         else:
-            area = kwargs['volume']
-        vapuor = self.get_vapour_flow_rate(area=area, volume=volume)
+            volume = kwargs['volume']
+        vapuor = self.get_vapour_flow_rate(weather, area=area, volume=volume)
         air = self.get_air_flow_rate(area=area, volume=volume)
         return vapuor, air

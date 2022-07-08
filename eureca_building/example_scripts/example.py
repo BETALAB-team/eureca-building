@@ -27,6 +27,7 @@ from eureca_building.weather import WeatherFile
 from eureca_building.surface import Surface, SurfaceInternalMass
 from eureca_building.thermal_zone import ThermalZone
 from eureca_building.internal_load import People, Lights, ElectricLoad
+from eureca_building.natural_ventilation import NaturalVentilation
 from eureca_building.schedule import Schedule
 from eureca_building.construction_dataset import ConstructionDataset
 from eureca_building.setpoints import SetpointDualBand
@@ -196,3 +197,16 @@ tz1.add_humidity_setpoint(h_sp)
 
 #########################################################
 # Ventilation
+
+infiltration_sched = Schedule(
+    "inf_sched",
+    "dimensionless",
+    np.array(([.3] * 8 * 2 + [.5] * 2 * 2 + [.3] * 4 * 2 + [.5] * 10 * 2) * 365)[:-1],
+)
+
+inf_obj = NaturalVentilation(
+    name='inf_obj',
+    unit='Vol/h',
+    nominal_value=1.,
+    schedule=infiltration_sched,
+)
