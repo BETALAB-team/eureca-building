@@ -123,6 +123,23 @@ class WeatherFile():
                 np.less(self.hourly_data["out_air_relative_humidity"], 1.)):
             logging.warning(f"WeatherFile, input relative humidity is out of range [-0.001, 1] [-]")
 
+        # Humidity calculation
+        self.hourly_data["out_air_saturation_pressure"] = np.zeros(len(self.hourly_data["out_air_db_temperature"]))
+        higher_filt = self.hourly_data["out_air_db_temperature"] > 0
+        lower_filt = np.logical_not(higher_filt)
+        self.hourly_data["out_air_saturation_pressure"][lower_filt] = 610.5 * np.exp(
+            (21.875 * self.hourly_data["out_air_db_temperature"][lower_filt]) / (
+                    265.5 + self.hourly_data["out_air_db_temperature"][lower_filt]))
+        self.hourly_data["out_air_saturation_pressure"][higher_filt] = 610.5 * np.exp(
+            (17.269 * self.hourly_data["out_air_db_temperature"][higher_filt]) / (
+                    237.3 + self.hourly_data["out_air_db_temperature"][higher_filt]))
+
+        self.hourly_data["out_air_specific_humidity"] = 0.622 * (
+                self.hourly_data["out_air_relative_humidity"] * self.hourly_data["out_air_saturation_pressure"] / (
+                self.hourly_data["out_air_pressure"] - (self.hourly_data["out_air_relative_humidity"] *
+                                                        self.hourly_data[
+                                                            "out_air_saturation_pressure"])))
+
         if irradiances_calculation:
             self.irradiances_calculation()
 
