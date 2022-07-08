@@ -751,7 +751,7 @@ class ThermalZone(object):
             'theta_ext': weather_file.hourly_data['out_air_db_temperature']
         }).plot(ax=ax2)
 
-    def Sensible1C(self, flag, Hve, T_e, T_sup_AHU, phi_load, sigma=[0., 0., 1.], T_set=20., phi_HC_set=0.):
+    def Sensible1C(self, flag, Hve, T_e, T_sup_AHU, phi_load, sigma=[0., 1.], T_set=20., phi_HC_set=0.):
         '''
         Solves ISO 13790 network for a specific time step
 
@@ -800,12 +800,15 @@ class ThermalZone(object):
         Hve_vent = Hve[0]
         Hve_inf = Hve[1]
         tau = CONFIG.time_step
+        rad_factor = sigma[0]
+        conv_factor = sigma[1]
         Y = np.zeros((3, 3))
         q = np.zeros((3))
 
         if flag == 'Tset':
-            Y[0, 0] = 1
+            Y[0, 0] = conv_factor
             Y[0, 1] = self.Htr_is
+            Y[1, 0] = rad_factor
             Y[1, 1] = -(self.Htr_is + self.Htr_w + self.Htr_ms)
             Y[1, 2] = self.Htr_ms
             Y[2, 1] = self.Htr_ms
@@ -826,8 +829,8 @@ class ThermalZone(object):
             Y[2, 1] = self.Htr_ms
             Y[2, 2] = -self.Cm / tau - self.Htr_em - self.Htr_ms
 
-            q[0] = -phi_HC_set - Hve_inf * T_e - Hve_vent * T_sup_AHU - phi_ia
-            q[1] = -phi_st - self.Htr_w * T_e
+            q[0] = -phi_HC_set * conv_factor - Hve_inf * T_e - Hve_vent * T_sup_AHU - phi_ia
+            q[1] = -phi_st * rad_factor - self.Htr_w * T_e
             q[2] = -self.Htr_em * T_e - phi_m - self.Cm * self.theta_m0 / tau
             y = np.linalg.inv(Y).dot(q)
             return np.insert(y, 0, phi_HC_set)
