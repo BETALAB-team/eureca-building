@@ -10,6 +10,7 @@ __maintainer__ = "Enrico Prataviera"
 
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 #########################################################
@@ -215,3 +216,28 @@ inf_obj = NaturalVentilation(
 tz1.add_natural_ventilation(inf_obj)
 tz_inf = tz1.extract_natural_ventilation(weather_file)
 # tz1._plot_Zone_Natural_Ventilation(weather_file)
+
+# Simulation Still Incomplete
+import time
+import pandas as pd
+
+df = pd.DataFrame(index=range(-8000, 8760 * 2 - 1),
+                  columns=pd.MultiIndex.from_product([['1C', '2C'], ['Ta', 'TmAW', 'TmIW', 'Load']]))
+start = time.time()
+for t in range(-8000, 8760 * 2 - 1):
+    ta, [tmaw, tmiw], pot = tz1.solve_timestep(t, weather_file, model='1C')
+    df.loc[t]['1C'] = [ta, tmaw, tmiw, pot]
+print(f"1C model: \n\t{8760 * 2 - 1} time steps\n\t{(time.time() - start):.2f} s")
+start = time.time()
+for t in range(-8000, 8760 * 2 - 1):
+    ta, [tmaw, tmiw], pot = tz1.solve_timestep(t, weather_file, model='2C')
+    df.loc[t]['2C'] = [ta, tmaw, tmiw, pot]
+print(f"2C model: \n\t{8760 * 2 - 1} time steps\n\t{(time.time() - start):.2f} s")
+
+fig, [[ax11, ax12], [ax21, ax22]] = plt.subplots(ncols=2, nrows=2)
+
+df['1C'][['Ta', 'TmAW', 'TmIW']].plot(ax=ax11)
+df['2C'][['Ta', 'TmAW', 'TmIW']].plot(ax=ax21)
+
+df['1C']['Load'].plot(ax=ax12)
+df['2C']['Load'].plot(ax=ax22)
