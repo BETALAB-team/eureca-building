@@ -79,7 +79,7 @@ class NaturalVentilation:
             raise InvalidScheduleType(
                 f"Ventilation object  {self.name}, schedule type must be 'Dimensionless' or 'Percent': {value.schedule_type}"
             )
-        if np.any(value < 0.):
+        if np.any(np.less(value.schedule, 0.)):
             raise ValueError(
                 f"Ventilation object  {self.name}, schedule type has some negative values"
             )
