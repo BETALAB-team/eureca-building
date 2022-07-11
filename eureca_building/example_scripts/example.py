@@ -232,25 +232,25 @@ df = pd.DataFrame(index=range(-preprocessing_timsteps, 8760 * 2 - 1),
 start = time.time()
 for t in range(-preprocessing_timsteps, 8760 * 2 - 1):
     ta, rha, [tmaw, tmiw], pot, lat_pot = tz1.solve_timestep(t, weather_file, model='1C')
-#     df.loc[t]['1C']['Ta [°C]', 'TmAW [°C]', 'TmIW [°C]', 'RH [-]',
-#                     'Sens Load [W]',
-#                     'Lat Load [W]'] = [ta, tmaw, tmiw, rha, pot, lat_pot]
+    df.loc[t]['1C']['Ta [°C]', 'TmAW [°C]', 'TmIW [°C]', 'RH [-]',
+                    'Sens Load [W]',
+                    'Lat Load [W]'] = [ta, tmaw, tmiw, rha, pot, lat_pot]
 print(f"1C model: \n\t{8760 * 2 - 1} time steps\n\t{(time.time() - start):.2f} s")
 start = time.time()
 for t in range(-preprocessing_timsteps, 8760 * 2 - 1):
     ta, rha, [tmaw, tmiw], pot, lat_pot = tz1.solve_timestep(t, weather_file, model='2C')
-#     df.loc[t]['2C']['Ta [°C]', 'TmAW [°C]', 'TmIW [°C]', 'RH [-]',
-#                     'Sens Load [W]',
-#                     'Lat Load [W]'] = [ta, tmaw, tmiw, rha, pot, lat_pot]
+    df.loc[t]['2C']['Ta [°C]', 'TmAW [°C]', 'TmIW [°C]', 'RH [-]',
+                    'Sens Load [W]',
+                    'Lat Load [W]'] = [ta, tmaw, tmiw, rha, pot, lat_pot]
 print(f"2C model: \n\t{8760 * 2 - 1} time steps\n\t{(time.time() - start):.2f} s")
 
-# fig, [[ax11, ax12], [ax21, ax22], [ax31, ax32]] = plt.subplots(ncols=2, nrows=3)
-# for model, axes in zip(['1C', '2C'], [[ax11, ax21, ax31], [ax12, ax22, ax32]]):
-#     df[model]['Ta_set_lower [°C]'].loc[0:] = heat_t.schedule
-#     df[model]['Ta_set_upper [°C]'].loc[0:] = cool_t.schedule
-#     df[model]['RH_set_lower [-]'].loc[0:] = heat_h.schedule
-#     df[model]['RH_set_upper [-]'].loc[0:] = cool_h.schedule
-#     df[model][['Ta [°C]', 'Ta_set_lower [°C]', 'Ta_set_upper [°C]']].iloc[preprocessing_timsteps:].plot(ax=axes[0])
-#     df[model][['RH [-]', 'RH_set_lower [-]', 'RH_set_upper [-]']].iloc[preprocessing_timsteps:].plot(ax=axes[1],
-#                                                                                                      linestyle='-')
-#     df[model][['Sens Load [W]', 'Lat Load [W]']].iloc[preprocessing_timsteps:].plot(ax=axes[2])
+fig, [[ax11, ax12], [ax21, ax22], [ax31, ax32]] = plt.subplots(ncols=2, nrows=3)
+for model, axes in zip(['1C', '2C'], [[ax11, ax21, ax31], [ax12, ax22, ax32]]):
+    df[model]['Ta_set_lower [°C]'].loc[0:] = heat_t.schedule
+    df[model]['Ta_set_upper [°C]'].loc[0:] = cool_t.schedule
+    df[model]['RH_set_lower [-]'].loc[0:] = heat_h.schedule
+    df[model]['RH_set_upper [-]'].loc[0:] = cool_h.schedule
+    df[model][['Ta [°C]', 'Ta_set_lower [°C]', 'Ta_set_upper [°C]']].iloc[preprocessing_timsteps:].plot(ax=axes[0])
+    df[model][['RH [-]', 'RH_set_lower [-]', 'RH_set_upper [-]']].iloc[preprocessing_timsteps:].plot(ax=axes[1],
+                                                                                                     linestyle='-')
+    df[model][['Sens Load [W]', 'Lat Load [W]']].iloc[preprocessing_timsteps:].plot(ax=axes[2])
