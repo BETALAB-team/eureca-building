@@ -9,3 +9,4 @@ Requires at leats pandas and numpy, but if you want use conda to install a envir
 ```
 conda -env create -f conda_env_requirements.yml
 ```
+
