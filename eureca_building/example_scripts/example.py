@@ -255,3 +255,5 @@ for model, axes in zip(['1C', '2C'], [[ax11, ax21, ax31], [ax12, ax22, ax32]]):
     df[model][['RH [-]', 'RH_set_lower [-]', 'RH_set_upper [-]']].iloc[preprocessing_timsteps:].plot(ax=axes[1],
                                                                                                      linestyle='-')
     df[model][['Sens Load [W]', 'Lat Load [W]']].iloc[preprocessing_timsteps:].plot(ax=axes[2])
+
+# Modifica di prova al codice
