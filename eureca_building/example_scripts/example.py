@@ -52,6 +52,7 @@ ceiling = dataset.constructions_dict[13]
 floor = dataset.constructions_dict[13]
 ext_wall = dataset.constructions_dict[35]
 window = dataset.windows_dict[2]
+mat=dataset.materials_dict[1]
 #########################################################
 
 # Definition of surfaces
